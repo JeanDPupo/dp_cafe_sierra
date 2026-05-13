@@ -1,38 +1,23 @@
-.App {
-  text-align: center;
+.panel-card {
+  @apply rounded-[1.75rem] border border-white/80 bg-white/80 p-6 shadow-soft backdrop-blur;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.stat-card {
+  @apply rounded-2xl border border-white/70 bg-white/70 p-4 shadow-soft backdrop-blur;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.stat-value {
+  @apply block text-sm font-bold uppercase tracking-[0.18em] text-soil-800;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.stat-copy {
+  @apply mt-2 text-sm leading-6 text-soil-600;
 }
 
-.App-link {
-  color: #61dafb;
+.section-title {
+  @apply font-display text-3xl text-soil-900 sm:text-4xl;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.section-copy {
+  @apply max-w-3xl text-base leading-8 text-soil-600;
 }

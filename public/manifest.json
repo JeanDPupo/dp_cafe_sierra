@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "CafeDirecto",
+  "name": "CafeDirecto Sacramento",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#227646",
+  "background_color": "#f9f7f2",
+  "description": "Plataforma web para comercializacion directa de cafe entre productores de Sacramento y consumidores finales."
 }

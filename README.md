@@ -68,3 +68,8 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+
+
+vamos a conectar todo, antes me gustaría recordarte, recuerda, no vamoss a diferencair entre consummidor y productor, son el mismo usuario, como el ejemplo que te daba de mercado libre, que alguien puede comprar y vender a la vez, solo accdiendo ala ruta adecuada. Ahora, cuando un usuario se loguee no le vamos a preguntar si es consumidor o productor, lo mismo cuando se registre, a ojos nuestros todos  son usuarios. Que necesitamos después, que cuando un usuario le de clic en vender si aúnn noo  está registrado como productorr, complete su perfil. Y ahora viene y sucede algo acá, un productor puede tener asociadas varias fincas? cuando un productor registra un nuevo lote este especifica a que finca pertenece ?
