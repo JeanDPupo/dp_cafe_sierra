@@ -111,11 +111,20 @@ export const mockSellerProfile = {
   nombre: 'Jheymer Jhireth Navarro',
   marca: 'J-Cafe',
   telefono: '+57 3001234567',
-  finca: 'Los Limos de la Fe',
   ubicacion: 'Corregimiento de Sacramento, Fundacion',
   experiencia: '15 anos cultivando cafe',
   historia:
     'Somos una familia cafetera que quiere vender con transparencia, mostrar el proceso y acercar el campo a la mesa.',
+  activeSeller: false,
+  fincas: [
+    {
+      id: 1,
+      nombre: 'Los Limos de la Fe',
+      ubicacion: 'Sacramento, Fundacion',
+      gps: '10.3910,-73.5475',
+      descripcion: 'Finca principal para lotes de altura.',
+    },
+  ],
 };
 
 export const producerHighlights = [

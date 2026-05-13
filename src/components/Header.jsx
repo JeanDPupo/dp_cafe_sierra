@@ -3,16 +3,18 @@ import { RoleContext } from '../context/RoleContext';
 import { RoleSelector } from './RoleSelector';
 
 export const Header = () => {
-  const { role, currentPage, setCurrentPage } = useContext(RoleContext);
+  const { role, currentPage, setCurrentPage, sellerProfile } = useContext(RoleContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navItems =
-    role === 'productor'
+    role === 'vender' && sellerProfile.activeSeller
       ? [
-          { id: 'home', label: 'Panel' },
+          { id: 'panel-vender', label: 'Panel' },
           { id: 'publicar', label: 'Publicar' },
           { id: 'mis-productos', label: 'Mis lotes' },
         ]
+      : role === 'vender'
+        ? [{ id: 'activar-productor', label: 'Completar perfil' }]
       : [
           { id: 'home', label: 'Inicio' },
           { id: 'catalogo', label: 'Catalogo' },

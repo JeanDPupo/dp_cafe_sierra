@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { RoleContext } from '../../context/RoleContext';
 import { ProductosContext } from '../../context/ProductosContext';
-import { mockSellerProfile } from '../../data/mockData';
 
 const initialProcess = [
   { etapa: 'Siembra', obligatorio: true, resultado: '', descripcion: '' },
@@ -14,12 +13,14 @@ const initialProcess = [
 export const PublicacionProductos = () => {
   const { setCurrentPage } = useContext(RoleContext);
   const { addProducto } = useContext(ProductosContext);
+  const { sellerProfile } = useContext(RoleContext);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     precio: '',
     cantidad: '',
     variedad: 'Arabica',
+    fincaId: sellerProfile.fincas?.[0]?.id || '',
     tipoGrano: '',
     tueste: 'Medio',
     descripcion: '',
@@ -54,16 +55,21 @@ export const PublicacionProductos = () => {
       tueste: formData.tueste,
       foto: formData.foto,
       descripcion: formData.descripcion,
-      ubicacionGPS: mockSellerProfile.ubicacion,
+      ubicacionGPS:
+        sellerProfile.fincas.find((finca) => String(finca.id) === String(formData.fincaId))
+          ?.ubicacion || sellerProfile.ubicacion,
       productor: {
-        nombre: mockSellerProfile.marca,
-        ubicacion: mockSellerProfile.ubicacion,
-        telefono: mockSellerProfile.telefono,
-        finca: mockSellerProfile.finca,
-        historia: mockSellerProfile.historia,
-        experiencia: mockSellerProfile.experiencia,
+        nombre: sellerProfile.marca,
+        ubicacion: sellerProfile.ubicacion,
+        telefono: sellerProfile.telefono,
+        finca:
+          sellerProfile.fincas.find((finca) => String(finca.id) === String(formData.fincaId))
+            ?.nombre || 'Finca sin nombre',
+        historia: sellerProfile.historia,
+        experiencia: sellerProfile.experiencia,
         especialidad: 'Venta directa y procesos visibles',
       },
+      fincaId: formData.fincaId,
       procesos: formData.procesos.filter(
         (proceso) => proceso.obligatorio || proceso.descripcion || proceso.resultado
       ),
@@ -117,6 +123,19 @@ export const PublicacionProductos = () => {
                 <option>Arabica</option>
                 <option>Geisha</option>
                 <option>Bourbon</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-soil-700">
+                Finca asociada
+              </label>
+              <select className="field" name="fincaId" value={formData.fincaId} onChange={handleChange} required>
+                {sellerProfile.fincas.map((finca) => (
+                  <option key={finca.id} value={finca.id}>
+                    {finca.nombre}
+                  </option>
+                ))}
               </select>
             </div>
 

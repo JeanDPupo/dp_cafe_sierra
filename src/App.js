@@ -9,6 +9,7 @@ import { Catalogo } from './pages/Consumidor/Catalogo';
 import { DetalleProducto } from './pages/Consumidor/DetalleProducto';
 import { PerfilProductor } from './pages/Consumidor/PerfilProductor';
 import { HomeProductor } from './pages/Productor/HomeProductor';
+import { CompletarPerfilProductor } from './pages/Productor/CompletarPerfilProductor';
 import { PublicacionProductos } from './pages/Productor/PublicacionProductos';
 import { MisProductos } from './pages/Productor/MisProductos';
 
@@ -21,7 +22,7 @@ function LogoPlaceholder() {
 }
 
 function LandingHero() {
-  const { setCurrentPage, setRoleExplicit } = useContext(RoleContext);
+  const { setCurrentPage, setRoleExplicit, goToSellerSection } = useContext(RoleContext);
 
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-hero px-6 py-10 shadow-soft sm:px-8 lg:px-12 lg:py-14">
@@ -42,7 +43,7 @@ function LandingHero() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <button
               onClick={() => {
-                setRoleExplicit('consumidor');
+                setRoleExplicit('comprar');
                 setCurrentPage('catalogo');
               }}
               className="btn-primary"
@@ -51,8 +52,7 @@ function LandingHero() {
             </button>
             <button
               onClick={() => {
-                setRoleExplicit('productor');
-                setCurrentPage('publicar');
+                goToSellerSection('publicar');
               }}
               className="btn-ghost"
             >
@@ -91,7 +91,7 @@ function LandingHero() {
             </div>
             <p className="mt-4 text-sm leading-7 text-soil-600">
               Por ahora dejamos un placeholder limpio para que luego entren tu
-              logo, favicon e iconos del manifiesto sin romper el diseño.
+              logo, favicon e iconos del manifiesto sin romper el diseno.
             </p>
           </div>
 
@@ -103,8 +103,8 @@ function LandingHero() {
               <RoleSelector compact />
             </div>
             <p className="mt-4 text-sm leading-7 text-soil-600">
-              Mantenemos dos vistas de trabajo para la demo: una orientada a comprar
-              y otra a vender, sin perder coherencia visual.
+              No son tipos de usuario distintos: es la misma cuenta entrando a la
+              seccion de comprar o a la de vender.
             </p>
           </div>
         </div>
@@ -114,11 +114,18 @@ function LandingHero() {
 }
 
 function AppContent() {
-  const { role, currentPage } = useContext(RoleContext);
+  const { role, currentPage, sellerProfile } = useContext(RoleContext);
 
   const renderPage = () => {
-    if (role === 'productor') {
+    if (role === 'vender') {
+      if (!sellerProfile.activeSeller && currentPage !== 'activar-productor') {
+        return <CompletarPerfilProductor />;
+      }
       switch (currentPage) {
+        case 'activar-productor':
+          return <CompletarPerfilProductor />;
+        case 'panel-vender':
+          return <HomeProductor />;
         case 'publicar':
           return <PublicacionProductos />;
         case 'mis-productos':
@@ -153,7 +160,7 @@ function AppContent() {
             <p className="font-semibold text-soil-800">CafeDirecto Sacramento</p>
             <p>
               Plataforma de comercializacion de cafe con enfoque en trazabilidad,
-              confianza y venta directa.
+              confianza, compra y venta desde una sola cuenta.
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-soil-500">

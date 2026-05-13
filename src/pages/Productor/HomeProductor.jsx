@@ -9,14 +9,15 @@ export const HomeProductor = () => {
     <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="surface-card">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-700">
-          Panel productor
+          Panel de venta
         </p>
         <h2 className="mt-3 section-title">
-          Publica con claridad, muestra tu historia y vende con una imagen mas confiable.
+          Publica con claridad, muestra tus fincas y vende con una imagen mas confiable.
         </h2>
         <p className="mt-4 section-copy">
-          Esta vista busca que el productor se sienta acompanado: menos ruido,
-          campos mas claros y una presencia visual que haga ver su cafe valioso.
+          Esta es la zona de venta dentro de la misma cuenta. Desde aqui el usuario
+          puede construir su perfil productor, registrar fincas y publicar lotes
+          asociados a cada una.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <button type="button" onClick={() => setCurrentPage('publicar')} className="btn-primary">
