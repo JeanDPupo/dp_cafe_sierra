@@ -1,17 +1,20 @@
 import React, { useContext, useState } from 'react';
 import { RoleContext } from '../context/RoleContext';
 import { AuthContext } from '../context/AuthContext';
+import { CommerceContext } from '../context/CommerceContext';
 import { RoleSelector } from './RoleSelector';
 
 export const Header = () => {
   const { role, currentPage, setCurrentPage, sellerProfile, goToSellerSection } = useContext(RoleContext);
   const { isAuthenticated, user, openAuth, logout } = useContext(AuthContext);
+  const { cart } = useContext(CommerceContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navItems =
     role === 'vender' && sellerProfile?.activeSeller
       ? [
           { id: 'panel-vender', label: 'Panel' },
+          { id: 'mis-fincas', label: 'Fincas' },
           { id: 'publicar', label: 'Publicar' },
           { id: 'mis-productos', label: 'Mis lotes' },
         ]
@@ -20,6 +23,8 @@ export const Header = () => {
       : [
           { id: 'home', label: 'Inicio' },
           { id: 'catalogo', label: 'Catalogo' },
+          { id: 'carrito', label: `Carrito${cart?.items?.length ? ` (${cart.items.length})` : ''}` },
+          { id: 'pedidos', label: 'Pedidos' },
         ];
 
   return (
@@ -27,7 +32,7 @@ export const Header = () => {
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <button
           type="button"
-          onClick={() => setCurrentPage('home')}
+          onClick={() => setCurrentPage(role === 'vender' ? 'panel-vender' : 'home')}
           className="flex items-center gap-3 text-left"
         >
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-dashed border-soil-300 bg-soil-50 text-[10px] font-bold uppercase tracking-[0.16em] text-soil-500">

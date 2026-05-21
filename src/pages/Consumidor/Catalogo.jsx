@@ -1,14 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { RoleContext } from '../../context/RoleContext';
 import { ProductosContext } from '../../context/ProductosContext';
+import { CommerceContext } from '../../context/CommerceContext';
 import { Filtros } from '../../components/Filtros';
 import { ProductCard } from '../../components/ProductCard';
 
 export const Catalogo = () => {
   const { setCurrentPage } = useContext(RoleContext);
+  const { addToCart } = useContext(CommerceContext);
   const {
     productos,
-    filtrarProductos,
+    refreshCatalog,
     openProduct,
     openProducerProfile,
     catalogLoading,
@@ -20,12 +22,13 @@ export const Catalogo = () => {
     setProductosFiltrados(productos);
   }, [productos]);
 
-  const handleFilter = (filtros) => {
+  const handleFilter = async (filtros) => {
     if (Object.keys(filtros).every((key) => !filtros[key])) {
-      setProductosFiltrados(productos);
+      await refreshCatalog();
       return;
     }
-    setProductosFiltrados(filtrarProductos(filtros));
+    const result = await refreshCatalog(filtros);
+    setProductosFiltrados(result);
   };
 
   const handleOpenProduct = async (producto) => {
@@ -84,6 +87,7 @@ export const Catalogo = () => {
               producto={producto}
               onViewDetail={() => handleOpenProduct(producto)}
               onViewProducer={() => handleOpenProducer(producto)}
+              onAddToCart={() => addToCart(producto.id, 1)}
             />
           ))}
         </div>

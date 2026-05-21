@@ -1,4 +1,4 @@
-const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:8080').replace(/\/$/, '');
+const API_URL = (process.env.REACT_APP_API_URL || 'http://127.0.0.1:8080').replace(/\/$/, '');
 
 function buildUrl(path, query = {}) {
   const url = new URL(`${API_URL}${path}`);
@@ -69,6 +69,30 @@ export const api = {
     request('/api/v1/products', { method: 'POST', token, body: payload }),
   deleteProduct: (token, productId) =>
     request(`/api/v1/products/${productId}`, { method: 'DELETE', token }),
+  getComments: (productId) => request(`/api/v1/products/${productId}/comments`),
+  createComment: (token, productId, payload) =>
+    request(`/api/v1/products/${productId}/comments`, {
+      method: 'POST',
+      token,
+      body: payload,
+    }),
+  getCart: (token) => request('/api/v1/cart', { token }),
+  addCartItem: (token, payload) =>
+    request('/api/v1/cart/items', { method: 'POST', token, body: payload }),
+  updateCartItem: (token, cartItemId, payload) =>
+    request(`/api/v1/cart/items/${cartItemId}`, { method: 'PATCH', token, body: payload }),
+  deleteCartItem: (token, cartItemId) =>
+    request(`/api/v1/cart/items/${cartItemId}`, { method: 'DELETE', token }),
+  checkout: (token) => request('/api/v1/orders/checkout', { method: 'POST', token }),
+  getPurchases: (token) => request('/api/v1/users/me/purchases', { token }),
+  getSales: (token) => request('/api/v1/users/me/sales', { token }),
+  createPaymentPreference: (token, orderId, provider) =>
+    request(`/api/v1/payments/orders/${orderId}/preference`, {
+      method: 'POST',
+      token,
+      body: provider ? { provider } : {},
+    }),
+  getPayment: (token, paymentId) => request(`/api/v1/payments/${paymentId}`, { token }),
 };
 
 export { API_URL };

@@ -53,7 +53,7 @@ export const RoleProvider = ({ children }) => {
 
   const setRoleExplicit = useCallback((newRole) => {
     setRole(newRole);
-    setCurrentPage('home');
+    setCurrentPage(newRole === 'comprar' ? 'catalogo' : 'panel-vender');
   }, []);
 
   const goToSellerSection = useCallback((page = 'panel-vender') => {
@@ -65,6 +65,32 @@ export const RoleProvider = ({ children }) => {
     }
     setCurrentPage(sellerProfile?.activeSeller ? page : 'activar-productor');
   }, [isAuthenticated, openAuth, sellerProfile?.activeSeller]);
+
+  const createFarm = useCallback(async (farmData) => {
+    if (!token) {
+      openAuth('login');
+      throw new Error('Primero necesitas iniciar sesion.');
+    }
+
+    setSellerProfileLoading(true);
+    setSellerProfileError('');
+    try {
+      const createdFarm = await api.createFarm(token, {
+        name: farmData.nombre,
+        locationText: farmData.ubicacion,
+        gps: farmData.gps || '',
+        description: farmData.descripcion || '',
+        active: true,
+      });
+      await refreshSellerProfile();
+      return createdFarm;
+    } catch (error) {
+      setSellerProfileError(error.message);
+      throw error;
+    } finally {
+      setSellerProfileLoading(false);
+    }
+  }, [token, openAuth, refreshSellerProfile]);
 
   const saveSellerProfile = useCallback(async (formData) => {
     if (!token) {
@@ -120,6 +146,7 @@ export const RoleProvider = ({ children }) => {
       sellerProfileLoading,
       sellerProfileError,
       saveSellerProfile,
+      createFarm,
       refreshSellerProfile,
     }),
     [
@@ -131,6 +158,7 @@ export const RoleProvider = ({ children }) => {
       setRoleExplicit,
       goToSellerSection,
       saveSellerProfile,
+      createFarm,
       refreshSellerProfile,
     ]
   );

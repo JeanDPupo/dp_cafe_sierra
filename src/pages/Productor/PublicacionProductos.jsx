@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { RoleContext } from '../../context/RoleContext';
 import { ProductosContext } from '../../context/ProductosContext';
 import { AuthContext } from '../../context/AuthContext';
@@ -24,7 +24,7 @@ export const PublicacionProductos = () => {
     precio: '',
     cantidad: '',
     variedad: 'Arabica',
-    fincaId: sellerProfile.fincas?.[0]?.id || '',
+    fincaId: sellerProfile?.fincas?.[0]?.id || '',
     tipoGrano: '',
     tueste: 'Medio',
     descripcion: '',
@@ -32,6 +32,13 @@ export const PublicacionProductos = () => {
       'https://images.unsplash.com/photo-1559056199-641a0ac8b8d5?w=900&h=700&fit=crop',
     procesos: initialProcess,
   });
+  const fincas = useMemo(() => sellerProfile?.fincas || [], [sellerProfile?.fincas]);
+
+  useEffect(() => {
+    if (!formData.fincaId && fincas.length > 0) {
+      setFormData((prev) => ({ ...prev, fincaId: fincas[0].id }));
+    }
+  }, [fincas, formData.fincaId]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -63,14 +70,14 @@ export const PublicacionProductos = () => {
         foto: formData.foto,
         descripcion: formData.descripcion,
         ubicacionGPS:
-          sellerProfile.fincas.find((finca) => String(finca.id) === String(formData.fincaId))
+          fincas.find((finca) => String(finca.id) === String(formData.fincaId))
             ?.ubicacion || sellerProfile.ubicacion,
         productor: {
           nombre: sellerProfile.marca,
           ubicacion: sellerProfile.ubicacion,
           telefono: sellerProfile.telefono,
           finca:
-            sellerProfile.fincas.find((finca) => String(finca.id) === String(formData.fincaId))
+            fincas.find((finca) => String(finca.id) === String(formData.fincaId))
               ?.nombre || 'Finca sin nombre',
           historia: sellerProfile.historia,
           experiencia: sellerProfile.experiencia,
@@ -121,6 +128,38 @@ export const PublicacionProductos = () => {
     );
   }
 
+  if (!sellerProfile?.activeSeller) {
+    return (
+      <section className="surface-card">
+        <h2 className="font-display text-3xl text-soil-900">Completa primero tu perfil vendedor</h2>
+        <p className="mt-3 text-sm leading-7 text-soil-600">
+          Antes de publicar, necesitamos tu perfil productor activo y al menos una finca registrada.
+        </p>
+        <div className="mt-6 flex gap-3">
+          <button type="button" onClick={() => setCurrentPage('activar-productor')} className="btn-primary">
+            Completar perfil
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (fincas.length === 0) {
+    return (
+      <section className="surface-card">
+        <h2 className="font-display text-3xl text-soil-900">Registra una finca antes de publicar</h2>
+        <p className="mt-3 text-sm leading-7 text-soil-600">
+          Cada lote debe quedar asociado a una finca concreta para que el origen del cafe sea claro.
+        </p>
+        <div className="mt-6 flex gap-3">
+          <button type="button" onClick={() => setCurrentPage('mis-fincas')} className="btn-primary">
+            Gestionar fincas
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="space-y-6">
       <button type="button" onClick={() => setCurrentPage('mis-productos')} className="btn-ghost">
@@ -162,7 +201,7 @@ export const PublicacionProductos = () => {
                 Finca asociada
               </label>
               <select className="field" name="fincaId" value={formData.fincaId} onChange={handleChange} required>
-                {sellerProfile.fincas.map((finca) => (
+                {fincas.map((finca) => (
                   <option key={finca.id} value={finca.id}>
                     {finca.nombre}
                   </option>

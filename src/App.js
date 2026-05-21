@@ -1,8 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import './App.css';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { RoleProvider, RoleContext } from './context/RoleContext';
 import { ProductosProvider } from './context/ProductosContext';
+import { CommerceProvider } from './context/CommerceContext';
 import { Header } from './components/Header';
 import { RoleSelector } from './components/RoleSelector';
 import { AuthPanel } from './components/AuthPanel';
@@ -10,10 +11,14 @@ import { HomeConsumidor } from './pages/Consumidor/HomeConsumidor';
 import { Catalogo } from './pages/Consumidor/Catalogo';
 import { DetalleProducto } from './pages/Consumidor/DetalleProducto';
 import { PerfilProductor } from './pages/Consumidor/PerfilProductor';
+import { Carrito } from './pages/Consumidor/Carrito';
+import { Pedidos } from './pages/Consumidor/Pedidos';
+import { PagoResultado } from './pages/Consumidor/PagoResultado';
 import { HomeProductor } from './pages/Productor/HomeProductor';
 import { CompletarPerfilProductor } from './pages/Productor/CompletarPerfilProductor';
 import { PublicacionProductos } from './pages/Productor/PublicacionProductos';
 import { MisProductos } from './pages/Productor/MisProductos';
+import { MisFincas } from './pages/Productor/MisFincas';
 
 function LogoPlaceholder() {
   return (
@@ -147,10 +152,41 @@ function LandingHero() {
 }
 
 function AppContent() {
-  const { role, currentPage, sellerProfile } = useContext(RoleContext);
+  const { role, currentPage, sellerProfile, setCurrentPage } = useContext(RoleContext);
   const { sessionReady } = useContext(AuthContext);
+  const isPaymentPath = window.location.pathname.startsWith('/payments/');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedPage = params.get('page');
+    if (requestedPage) {
+      setCurrentPage(requestedPage);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [setCurrentPage]);
 
   const renderPage = () => {
+    const pathname = window.location.pathname;
+    const paymentState = new URLSearchParams(window.location.search).get('payment');
+    if (paymentState) {
+      return <PagoResultado state={paymentState} />;
+    }
+    if (pathname.startsWith('/payments/success')) {
+      return <PagoResultado state="success" />;
+    }
+    if (pathname.startsWith('/payments/pending')) {
+      return <PagoResultado state="pending" />;
+    }
+    if (pathname.startsWith('/payments/failure')) {
+      return <PagoResultado state="failure" />;
+    }
+    if (pathname.startsWith('/payments/mock')) {
+      return <PagoResultado state="mock" />;
+    }
+    if (pathname.startsWith('/payments/nequi')) {
+      return <PagoResultado state="nequi" />;
+    }
+
     if (!sessionReady) {
       return (
         <section className="surface-card text-center">
@@ -173,6 +209,8 @@ function AppContent() {
           return <HomeProductor />;
         case 'publicar':
           return <PublicacionProductos />;
+        case 'mis-fincas':
+          return <MisFincas />;
         case 'mis-productos':
           return <MisProductos />;
         default:
@@ -187,6 +225,10 @@ function AppContent() {
         return <DetalleProducto />;
       case 'perfil-productor':
         return <PerfilProductor />;
+      case 'carrito':
+        return <Carrito />;
+      case 'pedidos':
+        return <Pedidos />;
       default:
         return <HomeConsumidor />;
     }
@@ -196,7 +238,7 @@ function AppContent() {
     <div className="min-h-screen bg-[linear-gradient(180deg,#f9f7f2_0%,#eefbf3_48%,#eef7ff_100%)] text-soil-900">
       <Header />
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
-        <LandingHero />
+        {!isPaymentPath && !new URLSearchParams(window.location.search).get('payment') && <LandingHero />}
         {renderPage()}
       </main>
       <footer className="border-t border-soil-200/80 bg-white/70">
@@ -227,7 +269,9 @@ function App() {
     <AuthProvider>
       <RoleProvider>
         <ProductosProvider>
-          <AppContent />
+          <CommerceProvider>
+            <AppContent />
+          </CommerceProvider>
         </ProductosProvider>
       </RoleProvider>
     </AuthProvider>

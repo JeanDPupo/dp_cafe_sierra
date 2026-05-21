@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const ProductCard = ({ producto, onViewDetail, onViewProducer }) => {
+export const ProductCard = ({ producto, onViewDetail, onViewProducer, onAddToCart }) => {
   return (
     <article className="group overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/85 shadow-soft transition duration-300 hover:-translate-y-1">
       <div className="relative">
@@ -57,13 +57,20 @@ export const ProductCard = ({ producto, onViewDetail, onViewProducer }) => {
           <p className="mt-1 text-sm text-soil-600">{producto.productor.finca || producto.farmName}</p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-3">
           <button type="button" onClick={onViewDetail} className="btn-primary flex-1">
             Ver detalle
           </button>
-          <button type="button" onClick={onViewProducer} className="btn-ghost flex-1">
-            Ver productor
-          </button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button type="button" onClick={onViewProducer} className="btn-ghost flex-1">
+              Ver productor
+            </button>
+            {onAddToCart && (
+              <button type="button" onClick={onAddToCart} className="btn-secondary flex-1">
+                Agregar
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </article>

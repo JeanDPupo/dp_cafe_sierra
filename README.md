@@ -21,7 +21,7 @@ npm run build
 Crea un archivo `.env` local si quieres apuntar al backend fuera de `localhost`:
 
 ```bash
-REACT_APP_API_URL=http://localhost:8080
+REACT_APP_API_URL=http://127.0.0.1:8080
 ```
 
 ## Render

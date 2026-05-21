@@ -1,11 +1,15 @@
 import React, { useContext } from 'react';
 import { RoleContext } from '../../context/RoleContext';
 import { AuthContext } from '../../context/AuthContext';
-import { producerHighlights } from '../../data/mockData';
 
 export const HomeProductor = () => {
   const { setCurrentPage, sellerProfile } = useContext(RoleContext);
   const { user } = useContext(AuthContext);
+  const producerHighlights = [
+    'Usa una marca clara, una historia breve y una ubicacion reconocible para dar confianza desde el primer vistazo.',
+    'Registra varias fincas si hace falta. Asi cada lote queda vinculado a su origen real.',
+    'En cada publicacion describe bien siembra, cultivo, cosecha y lavado y secado para mostrar trazabilidad.',
+  ];
 
   return (
     <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -38,6 +42,9 @@ export const HomeProductor = () => {
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <button type="button" onClick={() => setCurrentPage('publicar')} className="btn-primary">
             Crear publicacion
+          </button>
+          <button type="button" onClick={() => setCurrentPage('mis-fincas')} className="btn-secondary">
+            Gestionar fincas
           </button>
           <button type="button" onClick={() => setCurrentPage('mis-productos')} className="btn-ghost">
             Ver mis lotes
