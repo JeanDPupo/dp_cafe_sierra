@@ -5,7 +5,15 @@ import { BotonWhatsApp } from '../../components/BotonWhatsApp';
 
 export const DetalleProducto = () => {
   const { setCurrentPage } = useContext(RoleContext);
-  const { selectedProducto } = useContext(ProductosContext);
+  const { selectedProducto, detailLoading } = useContext(ProductosContext);
+
+  if (detailLoading) {
+    return (
+      <div className="surface-card text-center">
+        <p className="text-soil-600">Cargando detalle del lote...</p>
+      </div>
+    );
+  }
 
   if (!selectedProducto) {
     return (
@@ -62,6 +70,19 @@ export const DetalleProducto = () => {
               <div className="rounded-2xl bg-white p-4 shadow-soft">
                 <p className="text-xs uppercase tracking-[0.16em] text-soil-500">Tueste</p>
                 <p className="mt-2 font-semibold text-soil-900">{selectedProducto.tueste}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl bg-white p-4 shadow-soft">
+                <p className="text-xs uppercase tracking-[0.16em] text-soil-500">Calificacion</p>
+                <p className="mt-2 font-semibold text-soil-900">
+                  {selectedProducto.promedioCalificacion?.toFixed?.(1) || '0.0'} / 5
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white p-4 shadow-soft">
+                <p className="text-xs uppercase tracking-[0.16em] text-soil-500">Finca</p>
+                <p className="mt-2 font-semibold text-soil-900">{selectedProducto.farmName}</p>
               </div>
             </div>
           </div>

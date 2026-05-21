@@ -1,8 +1,10 @@
 import React, { useContext } from 'react';
 import { RoleContext } from '../../context/RoleContext';
+import { AuthContext } from '../../context/AuthContext';
 
 export const HomeConsumidor = () => {
   const { setCurrentPage } = useContext(RoleContext);
+  const { isAuthenticated, user, openAuth } = useContext(AuthContext);
 
   return (
     <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -22,9 +24,15 @@ export const HomeConsumidor = () => {
           <button type="button" onClick={() => setCurrentPage('catalogo')} className="btn-primary">
             Ir al catalogo
           </button>
-          <button type="button" onClick={() => setCurrentPage('home')} className="btn-ghost">
-            Ver portada
-          </button>
+          {isAuthenticated ? (
+            <div className="rounded-full border border-soil-300 bg-white/70 px-5 py-3 text-sm text-soil-700">
+              Sesion activa como <span className="font-semibold text-soil-900">{user.fullName}</span>
+            </div>
+          ) : (
+            <button type="button" onClick={() => openAuth('register')} className="btn-ghost">
+              Crear cuenta
+            </button>
+          )}
         </div>
       </div>
 

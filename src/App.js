@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
 import './App.css';
+import { AuthProvider, AuthContext } from './context/AuthContext';
 import { RoleProvider, RoleContext } from './context/RoleContext';
 import { ProductosProvider } from './context/ProductosContext';
 import { Header } from './components/Header';
 import { RoleSelector } from './components/RoleSelector';
+import { AuthPanel } from './components/AuthPanel';
 import { HomeConsumidor } from './pages/Consumidor/HomeConsumidor';
 import { Catalogo } from './pages/Consumidor/Catalogo';
 import { DetalleProducto } from './pages/Consumidor/DetalleProducto';
@@ -23,6 +25,7 @@ function LogoPlaceholder() {
 
 function LandingHero() {
   const { setCurrentPage, setRoleExplicit, goToSellerSection } = useContext(RoleContext);
+  const { isAuthenticated, user, openAuth } = useContext(AuthContext);
 
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-hero px-6 py-10 shadow-soft sm:px-8 lg:px-12 lg:py-14">
@@ -97,6 +100,36 @@ function LandingHero() {
 
           <div className="panel-card">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-700">
+              Sesion actual
+            </p>
+            {isAuthenticated ? (
+              <div className="mt-4 space-y-3">
+                <p className="text-lg font-semibold text-soil-900">{user.fullName}</p>
+                <p className="text-sm text-soil-600">{user.email}</p>
+                <p className="text-sm leading-7 text-soil-600">
+                  Estas usando una sola cuenta para explorar, comprar y entrar luego a la zona de venta.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                <p className="text-sm leading-7 text-soil-600">
+                  Puedes explorar el catalogo sin entrar, pero para vender, guardar tu perfil productor
+                  y publicar lotes necesitas iniciar sesion.
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <button type="button" className="btn-secondary" onClick={() => openAuth('login')}>
+                    Ingresar
+                  </button>
+                  <button type="button" className="btn-ghost" onClick={() => openAuth('register')}>
+                    Crear cuenta
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="panel-card">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-700">
               Modo de vista
             </p>
             <div className="mt-4">
@@ -115,10 +148,22 @@ function LandingHero() {
 
 function AppContent() {
   const { role, currentPage, sellerProfile } = useContext(RoleContext);
+  const { sessionReady } = useContext(AuthContext);
 
   const renderPage = () => {
+    if (!sessionReady) {
+      return (
+        <section className="surface-card text-center">
+          <h2 className="font-display text-3xl text-soil-900">Preparando tu sesion</h2>
+          <p className="mt-3 text-sm leading-7 text-soil-600">
+            Estamos verificando si ya existe una cuenta activa en este dispositivo.
+          </p>
+        </section>
+      );
+    }
+
     if (role === 'vender') {
-      if (!sellerProfile.activeSeller && currentPage !== 'activar-productor') {
+      if (!sellerProfile?.activeSeller && currentPage !== 'activar-productor') {
         return <CompletarPerfilProductor />;
       }
       switch (currentPage) {
@@ -168,21 +213,24 @@ function AppContent() {
             <span className="h-1 w-1 rounded-full bg-soil-300" />
             <span>Responsive</span>
             <span className="h-1 w-1 rounded-full bg-soil-300" />
-            <span>Demo 2026</span>
+            <span>Render ready</span>
           </div>
         </div>
       </footer>
+      <AuthPanel />
     </div>
   );
 }
 
 function App() {
   return (
-    <RoleProvider>
-      <ProductosProvider>
-        <AppContent />
-      </ProductosProvider>
-    </RoleProvider>
+    <AuthProvider>
+      <RoleProvider>
+        <ProductosProvider>
+          <AppContent />
+        </ProductosProvider>
+      </RoleProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,75 +1,60 @@
-# Getting Started with Create React App
+# CafeDirecto Sacramento Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend React para la plataforma de comercializacion directa de cafe entre productores de Sacramento y compradores finales.
 
-## Available Scripts
+## Modelo de usuario
 
-In the project directory, you can run:
+- Hay una sola cuenta por persona.
+- La misma cuenta puede comprar y vender.
+- El usuario no elige "consumidor" o "productor" al registrarse.
+- Cuando entra a vender por primera vez, completa su perfil productor y registra al menos una finca.
 
-### `npm start`
+## Scripts
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+npm start
+npm run build
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Variable de entorno
 
-### `npm test`
+Crea un archivo `.env` local si quieres apuntar al backend fuera de `localhost`:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+REACT_APP_API_URL=http://localhost:8080
+```
 
-### `npm run build`
+## Render
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Este repo ya incluye:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `render.yaml`
+- `public/_redirects`
+- PWA base con `manifest.json`, `service-worker.js` y `offline.html`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+En Render:
 
-### `npm run eject`
+1. Crea un `Static Site`.
+2. Conecta este repositorio.
+3. Usa `render.yaml` o configura manualmente:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+Build Command: npm install && npm run build
+Publish Directory: build
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. Configura la variable:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+REACT_APP_API_URL=https://TU-BACKEND.onrender.com
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Estado actual
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-
-
-
-vamos a conectar todo, antes me gustaría recordarte, recuerda, no vamoss a diferencair entre consummidor y productor, son el mismo usuario, como el ejemplo que te daba de mercado libre, que alguien puede comprar y vender a la vez, solo accdiendo ala ruta adecuada. Ahora, cuando un usuario se loguee no le vamos a preguntar si es consumidor o productor, lo mismo cuando se registre, a ojos nuestros todos  son usuarios. Que necesitamos después, que cuando un usuario le de clic en vender si aúnn noo  está registrado como productorr, complete su perfil. Y ahora viene y sucede algo acá, un productor puede tener asociadas varias fincas? cuando un productor registra un nuevo lote este especifica a que finca pertenece ?
+- Catalogo conectado al backend.
+- Detalle de producto conectado al backend.
+- Perfil publico del productor conectado al backend.
+- Registro e inicio de sesion conectados al backend.
+- Activacion de perfil productor conectada al backend.
+- Publicacion de lotes conectada al backend.
+- Mis lotes conectados al backend.

@@ -1,0 +1,9 @@
+staticSites:
+  - name: dp-cafe-sierra
+    rootDir: .
+    buildCommand: npm install && npm run build
+    publishPath: build
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false

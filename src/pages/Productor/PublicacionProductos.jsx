@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { RoleContext } from '../../context/RoleContext';
 import { ProductosContext } from '../../context/ProductosContext';
+import { AuthContext } from '../../context/AuthContext';
 
 const initialProcess = [
   { etapa: 'Siembra', obligatorio: true, resultado: '', descripcion: '' },
@@ -14,7 +15,10 @@ export const PublicacionProductos = () => {
   const { setCurrentPage } = useContext(RoleContext);
   const { addProducto } = useContext(ProductosContext);
   const { sellerProfile } = useContext(RoleContext);
+  const { isAuthenticated, openAuth } = useContext(AuthContext);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     precio: '',
@@ -43,40 +47,67 @@ export const PublicacionProductos = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setSubmitError('');
+    setSubmitting(true);
 
-    addProducto({
-      nombre: formData.nombre,
-      precio: parseInt(formData.precio, 10),
-      cantidad: parseInt(formData.cantidad, 10),
-      variedad: formData.variedad,
-      tipoGrano: formData.tipoGrano,
-      tueste: formData.tueste,
-      foto: formData.foto,
-      descripcion: formData.descripcion,
-      ubicacionGPS:
-        sellerProfile.fincas.find((finca) => String(finca.id) === String(formData.fincaId))
-          ?.ubicacion || sellerProfile.ubicacion,
-      productor: {
-        nombre: sellerProfile.marca,
-        ubicacion: sellerProfile.ubicacion,
-        telefono: sellerProfile.telefono,
-        finca:
+    try {
+      await addProducto({
+        nombre: formData.nombre,
+        precio: parseInt(formData.precio, 10),
+        cantidad: parseInt(formData.cantidad, 10),
+        variedad: formData.variedad,
+        tipoGrano: formData.tipoGrano,
+        tueste: formData.tueste,
+        foto: formData.foto,
+        descripcion: formData.descripcion,
+        ubicacionGPS:
           sellerProfile.fincas.find((finca) => String(finca.id) === String(formData.fincaId))
-            ?.nombre || 'Finca sin nombre',
-        historia: sellerProfile.historia,
-        experiencia: sellerProfile.experiencia,
-        especialidad: 'Venta directa y procesos visibles',
-      },
-      fincaId: formData.fincaId,
-      procesos: formData.procesos.filter(
-        (proceso) => proceso.obligatorio || proceso.descripcion || proceso.resultado
-      ),
-    });
+            ?.ubicacion || sellerProfile.ubicacion,
+        productor: {
+          nombre: sellerProfile.marca,
+          ubicacion: sellerProfile.ubicacion,
+          telefono: sellerProfile.telefono,
+          finca:
+            sellerProfile.fincas.find((finca) => String(finca.id) === String(formData.fincaId))
+              ?.nombre || 'Finca sin nombre',
+          historia: sellerProfile.historia,
+          experiencia: sellerProfile.experiencia,
+          especialidad: 'Venta directa y procesos visibles',
+        },
+        fincaId: formData.fincaId,
+        procesos: formData.procesos.filter(
+          (proceso) => proceso.obligatorio || proceso.descripcion || proceso.resultado
+        ),
+      });
 
-    setSubmitted(true);
-    setTimeout(() => setCurrentPage('mis-productos'), 1200);
+      setSubmitted(true);
+      setTimeout(() => setCurrentPage('mis-productos'), 1200);
+    } catch (error) {
+      setSubmitError(error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <section className="surface-card">
+        <h2 className="font-display text-3xl text-soil-900">Necesitas iniciar sesion</h2>
+        <p className="mt-3 text-sm leading-7 text-soil-600">
+          Primero entra con tu cuenta y despues completa tu perfil productor para publicar lotes.
+        </p>
+        <div className="mt-6 flex gap-3">
+          <button type="button" className="btn-primary" onClick={() => openAuth('login')}>
+            Ingresar
+          </button>
+          <button type="button" className="btn-ghost" onClick={() => openAuth('register')}>
+            Crear cuenta
+          </button>
+        </div>
+      </section>
+    );
   };
 
   if (submitted) {
@@ -193,6 +224,12 @@ export const PublicacionProductos = () => {
             </div>
           </div>
 
+          {submitError && (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {submitError}
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soil-500">
@@ -231,8 +268,8 @@ export const PublicacionProductos = () => {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button type="submit" className="btn-primary">
-              Publicar lote
+            <button type="submit" className="btn-primary" disabled={submitting}>
+              {submitting ? 'Publicando...' : 'Publicar lote'}
             </button>
             <button type="button" onClick={() => setCurrentPage('mis-productos')} className="btn-ghost">
               Cancelar

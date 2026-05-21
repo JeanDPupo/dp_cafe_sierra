@@ -5,7 +5,7 @@ import { ProductCard } from '../../components/ProductCard';
 
 export const MisProductos = () => {
   const { setCurrentPage } = useContext(RoleContext);
-  const { misProductos, deleteProducto, setSelectedProducto } = useContext(ProductosContext);
+  const { misProductos, deleteProducto, openProduct, openProducerProfile, mineLoading } = useContext(ProductosContext);
 
   const totalKg = misProductos.reduce((sum, producto) => sum + producto.cantidad, 0);
 
@@ -38,6 +38,12 @@ export const MisProductos = () => {
         </div>
       </div>
 
+      {mineLoading && (
+        <div className="surface-card text-sm text-soil-600">
+          Cargando tus publicaciones...
+        </div>
+      )}
+
       {misProductos.length === 0 ? (
         <div className="surface-card text-center">
           <h2 className="font-display text-3xl text-soil-900">Aun no tienes lotes publicados</h2>
@@ -51,18 +57,18 @@ export const MisProductos = () => {
             <div key={producto.id} className="space-y-3">
               <ProductCard
                 producto={producto}
-                onViewDetail={() => {
-                  setSelectedProducto(producto);
+                onViewDetail={async () => {
+                  await openProduct(producto.id);
                   setCurrentPage('detalle-producto');
                 }}
-                onViewProducer={() => {
-                  setSelectedProducto(producto);
+                onViewProducer={async () => {
+                  await openProducerProfile(producto.producerProfileId);
                   setCurrentPage('perfil-productor');
                 }}
               />
               <button
                 type="button"
-                onClick={() => deleteProducto(producto.id)}
+                onClick={async () => deleteProducto(producto.id)}
                 className="w-full rounded-full border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
               >
                 Eliminar lote

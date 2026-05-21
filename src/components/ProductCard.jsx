@@ -23,7 +23,7 @@ export const ProductCard = ({ producto, onViewDetail, onViewProducer }) => {
               <p className="text-xs uppercase tracking-[0.14em] text-soil-500">
                 Precio
               </p>
-              <p className="text-lg font-bold">${producto.precio.toLocaleString()}</p>
+              <p className="text-lg font-bold">${Number(producto.precio).toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -39,7 +39,7 @@ export const ProductCard = ({ producto, onViewDetail, onViewProducer }) => {
             <p className="text-xs uppercase tracking-[0.16em] text-soil-500">
               Disponible
             </p>
-            <p className="mt-1 font-semibold text-soil-900">{producto.cantidad} kg</p>
+            <p className="mt-1 font-semibold text-soil-900">{Number(producto.cantidad)} kg</p>
           </div>
           <div className="rounded-2xl bg-sky-50 p-3">
             <p className="text-xs uppercase tracking-[0.16em] text-sky-700">
@@ -54,7 +54,7 @@ export const ProductCard = ({ producto, onViewDetail, onViewProducer }) => {
             Productor
           </p>
           <p className="mt-1 font-semibold text-soil-900">{producto.productor.nombre}</p>
-          <p className="mt-1 text-sm text-soil-600">{producto.productor.finca}</p>
+          <p className="mt-1 text-sm text-soil-600">{producto.productor.finca || producto.farmName}</p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">

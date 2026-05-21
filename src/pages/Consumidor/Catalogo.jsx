@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { RoleContext } from '../../context/RoleContext';
 import { ProductosContext } from '../../context/ProductosContext';
 import { Filtros } from '../../components/Filtros';
@@ -6,8 +6,19 @@ import { ProductCard } from '../../components/ProductCard';
 
 export const Catalogo = () => {
   const { setCurrentPage } = useContext(RoleContext);
-  const { productos, filtrarProductos, setSelectedProducto } = useContext(ProductosContext);
+  const {
+    productos,
+    filtrarProductos,
+    openProduct,
+    openProducerProfile,
+    catalogLoading,
+    productosError,
+  } = useContext(ProductosContext);
   const [productosFiltrados, setProductosFiltrados] = useState(productos);
+
+  useEffect(() => {
+    setProductosFiltrados(productos);
+  }, [productos]);
 
   const handleFilter = (filtros) => {
     if (Object.keys(filtros).every((key) => !filtros[key])) {
@@ -17,9 +28,14 @@ export const Catalogo = () => {
     setProductosFiltrados(filtrarProductos(filtros));
   };
 
-  const openProduct = (producto, page) => {
-    setSelectedProducto(producto);
-    setCurrentPage(page);
+  const handleOpenProduct = async (producto) => {
+    await openProduct(producto.id);
+    setCurrentPage('detalle-producto');
+  };
+
+  const handleOpenProducer = async (producto) => {
+    await openProducerProfile(producto.producerProfileId);
+    setCurrentPage('perfil-productor');
   };
 
   return (
@@ -39,6 +55,18 @@ export const Catalogo = () => {
         </div>
       </div>
 
+      {catalogLoading && (
+        <div className="surface-card text-sm text-soil-600">
+          Cargando cafes disponibles...
+        </div>
+      )}
+
+      {productosError && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {productosError}
+        </div>
+      )}
+
       {productosFiltrados.length === 0 ? (
         <div className="surface-card text-center">
           <h3 className="font-display text-2xl text-soil-900">
@@ -54,8 +82,8 @@ export const Catalogo = () => {
             <ProductCard
               key={producto.id}
               producto={producto}
-              onViewDetail={() => openProduct(producto, 'detalle-producto')}
-              onViewProducer={() => openProduct(producto, 'perfil-productor')}
+              onViewDetail={() => handleOpenProduct(producto)}
+              onViewProducer={() => handleOpenProducer(producto)}
             />
           ))}
         </div>

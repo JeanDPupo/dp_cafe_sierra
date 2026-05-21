@@ -1,13 +1,15 @@
 import React, { useContext, useState } from 'react';
 import { RoleContext } from '../context/RoleContext';
+import { AuthContext } from '../context/AuthContext';
 import { RoleSelector } from './RoleSelector';
 
 export const Header = () => {
-  const { role, currentPage, setCurrentPage, sellerProfile } = useContext(RoleContext);
+  const { role, currentPage, setCurrentPage, sellerProfile, goToSellerSection } = useContext(RoleContext);
+  const { isAuthenticated, user, openAuth, logout } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navItems =
-    role === 'vender' && sellerProfile.activeSeller
+    role === 'vender' && sellerProfile?.activeSeller
       ? [
           { id: 'panel-vender', label: 'Panel' },
           { id: 'publicar', label: 'Publicar' },
@@ -65,6 +67,31 @@ export const Header = () => {
           <RoleSelector />
         </div>
 
+        <div className="hidden items-center gap-3 lg:flex">
+          {isAuthenticated ? (
+            <>
+              <div className="rounded-full bg-soil-50 px-4 py-2 text-sm text-soil-700">
+                <span className="font-semibold text-soil-900">{user.fullName}</span>
+              </div>
+              <button type="button" className="btn-ghost px-4 py-2" onClick={() => goToSellerSection()}>
+                Vender
+              </button>
+              <button type="button" className="btn-secondary px-4 py-2" onClick={logout}>
+                Cerrar sesion
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" className="btn-ghost px-4 py-2" onClick={() => openAuth('login')}>
+                Ingresar
+              </button>
+              <button type="button" className="btn-secondary px-4 py-2" onClick={() => openAuth('register')}>
+                Crear cuenta
+              </button>
+            </>
+          )}
+        </div>
+
         <button
           type="button"
           className="ml-auto rounded-full border border-soil-200 bg-white p-3 text-soil-700 lg:hidden"
@@ -96,6 +123,55 @@ export const Header = () => {
           </div>
           <div className="mt-4">
             <RoleSelector compact />
+          </div>
+          <div className="mt-4 grid gap-2">
+            {isAuthenticated ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    goToSellerSection();
+                    setMenuOpen(false);
+                  }}
+                  className="block w-full rounded-2xl bg-leaf-50 px-4 py-3 text-left text-sm font-semibold text-leaf-800"
+                >
+                  Ir a vender
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setMenuOpen(false);
+                  }}
+                  className="block w-full rounded-2xl bg-soil-50 px-4 py-3 text-left text-sm font-semibold text-soil-800"
+                >
+                  Cerrar sesion
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    openAuth('login');
+                    setMenuOpen(false);
+                  }}
+                  className="block w-full rounded-2xl bg-soil-50 px-4 py-3 text-left text-sm font-semibold text-soil-800"
+                >
+                  Ingresar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    openAuth('register');
+                    setMenuOpen(false);
+                  }}
+                  className="block w-full rounded-2xl bg-sky-50 px-4 py-3 text-left text-sm font-semibold text-sky-800"
+                >
+                  Crear cuenta
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
