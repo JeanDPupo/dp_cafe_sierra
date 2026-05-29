@@ -12,21 +12,36 @@ function buildUrl(path, query = {}) {
 
 async function request(path, options = {}) {
   const { method = 'GET', token, body, query, headers = {} } = options;
-  const response = await fetch(buildUrl(path, query), {
-    method,
-    headers: {
-      Accept: 'application/json',
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(buildUrl(path, query), {
+      method,
+      headers: {
+        Accept: 'application/json',
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (networkError) {
+    const error = new Error(
+      'No se pudo conectar con el servidor. Asegurate de que el backend este funcionando en ' + API_URL + '.'
+    );
+    error.status = 0;
+    error.isNetworkError = true;
+    throw error;
+  }
 
   const contentType = response.headers.get('content-type') || '';
-  const data = contentType.includes('application/json')
-    ? await response.json()
-    : await response.text();
+  let data;
+  try {
+    data = contentType.includes('application/json')
+      ? await response.json()
+      : await response.text();
+  } catch {
+    data = null;
+  }
 
   if (!response.ok) {
     const message =

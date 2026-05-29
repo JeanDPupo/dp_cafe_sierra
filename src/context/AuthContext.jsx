@@ -75,7 +75,6 @@ export const AuthProvider = ({ children }) => {
       return response;
     } catch (error) {
       setAuthError(error.message);
-      throw error;
     } finally {
       setAuthLoading(false);
     }
@@ -91,7 +90,6 @@ export const AuthProvider = ({ children }) => {
       return response;
     } catch (error) {
       setAuthError(error.message);
-      throw error;
     } finally {
       setAuthLoading(false);
     }

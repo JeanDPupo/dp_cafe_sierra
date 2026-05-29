@@ -1,30 +1,27 @@
 import React, { useContext, useState } from 'react';
 import { RoleContext } from '../context/RoleContext';
 import { AuthContext } from '../context/AuthContext';
-import { CommerceContext } from '../context/CommerceContext';
 import { RoleSelector } from './RoleSelector';
 
 export const Header = () => {
-  const { role, currentPage, setCurrentPage, sellerProfile, goToSellerSection } = useContext(RoleContext);
-  const { isAuthenticated, user, openAuth, logout } = useContext(AuthContext);
-  const { cart } = useContext(CommerceContext);
+  const { role, currentPage, setCurrentPage } = useContext(RoleContext);
+  const { isAuthenticated, openAuth, logout } = useContext(AuthContext);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const navItems =
-    role === 'vender' && sellerProfile?.activeSeller
+    role === 'productor'
       ? [
-          { id: 'panel-vender', label: 'Panel' },
-          { id: 'mis-fincas', label: 'Fincas' },
+          { id: 'home', label: 'Panel' },
           { id: 'publicar', label: 'Publicar' },
           { id: 'mis-productos', label: 'Mis lotes' },
+          { id: 'mis-fincas', label: 'Fincas' },
+          { id: 'mis-ventas', label: 'Ventas' },
+          { id: 'configurar-pagos', label: 'Pagos' },
         ]
-      : role === 'vender'
-        ? [{ id: 'activar-productor', label: 'Completar perfil' }]
       : [
           { id: 'home', label: 'Inicio' },
           { id: 'catalogo', label: 'Catalogo' },
-          { id: 'carrito', label: `Carrito${cart?.items?.length ? ` (${cart.items.length})` : ''}` },
-          { id: 'pedidos', label: 'Pedidos' },
         ];
 
   return (
@@ -32,12 +29,10 @@ export const Header = () => {
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <button
           type="button"
-          onClick={() => setCurrentPage(role === 'vender' ? 'panel-vender' : 'home')}
+          onClick={() => setCurrentPage('home')}
           className="flex items-center gap-3 text-left"
         >
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-dashed border-soil-300 bg-soil-50 text-[10px] font-bold uppercase tracking-[0.16em] text-soil-500">
-            Logo
-          </div>
+          <img src="/logo-brand.jpeg" alt="CafeDirecto Sacramento" className="h-11 w-11 rounded-2xl object-cover shadow-soft" />
           <div>
             <p className="font-display text-2xl leading-none text-soil-900">
               CafeDirecto
@@ -68,33 +63,70 @@ export const Header = () => {
           })}
         </nav>
 
-        <div className="hidden lg:block">
-          <RoleSelector />
-        </div>
-
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden flex items-center gap-2 lg:flex">
           {isAuthenticated ? (
             <>
-              <div className="rounded-full bg-soil-50 px-4 py-2 text-sm text-soil-700">
-                <span className="font-semibold text-soil-900">{user.fullName}</span>
+              <button
+                type="button"
+                onClick={() => setCurrentPage('carrito')}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-soil-600 hover:bg-soil-100 hover:text-soil-900"
+              >
+                Carrito
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentPage('pedidos')}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-soil-600 hover:bg-soil-100 hover:text-soil-900"
+              >
+                Pedidos
+              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-soil-600 hover:bg-soil-100 hover:text-soil-900"
+                >
+                  Cuenta
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-48 rounded-2xl border border-soil-200 bg-white p-2 shadow-soft">
+                    <button
+                      type="button"
+                      onClick={() => { setCurrentPage('settings'); setUserMenuOpen(false); }}
+                      className="block w-full rounded-xl px-4 py-2.5 text-left text-sm font-semibold text-soil-800 hover:bg-soil-50"
+                    >
+                      Configuracion
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { logout(); setCurrentPage('home'); setUserMenuOpen(false); }}
+                      className="block w-full rounded-xl px-4 py-2.5 text-left text-sm font-semibold text-red-700 hover:bg-red-50"
+                    >
+                      Cerrar sesion
+                    </button>
+                  </div>
+                )}
               </div>
-              <button type="button" className="btn-ghost px-4 py-2" onClick={() => goToSellerSection()}>
-                Vender
-              </button>
-              <button type="button" className="btn-secondary px-4 py-2" onClick={logout}>
-                Cerrar sesion
-              </button>
             </>
           ) : (
             <>
-              <button type="button" className="btn-ghost px-4 py-2" onClick={() => openAuth('login')}>
-                Ingresar
+              <button
+                type="button"
+                onClick={() => setCurrentPage('onboarding')}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-soil-600 hover:bg-soil-100 hover:text-soil-900"
+              >
+                Como funciona
               </button>
-              <button type="button" className="btn-secondary px-4 py-2" onClick={() => openAuth('register')}>
-                Crear cuenta
+              <button
+                type="button"
+                onClick={() => openAuth('login')}
+                className="btn-primary"
+              >
+                Ingresar
               </button>
             </>
           )}
+          <RoleSelector compact />
         </div>
 
         <button
@@ -125,30 +157,47 @@ export const Header = () => {
                 {item.label}
               </button>
             ))}
-          </div>
-          <div className="mt-4">
-            <RoleSelector compact />
-          </div>
-          <div className="mt-4 grid gap-2">
             {isAuthenticated ? (
               <>
                 <button
                   type="button"
-                  onClick={() => {
-                    goToSellerSection();
-                    setMenuOpen(false);
-                  }}
-                  className="block w-full rounded-2xl bg-leaf-50 px-4 py-3 text-left text-sm font-semibold text-leaf-800"
+                  onClick={() => { setCurrentPage('carrito'); setMenuOpen(false); }}
+                  className="block w-full rounded-2xl bg-soil-50 px-4 py-3 text-left text-sm font-semibold text-soil-800"
                 >
-                  Ir a vender
+                  Carrito
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    logout();
-                    setMenuOpen(false);
-                  }}
+                  onClick={() => { setCurrentPage('pedidos'); setMenuOpen(false); }}
                   className="block w-full rounded-2xl bg-soil-50 px-4 py-3 text-left text-sm font-semibold text-soil-800"
+                >
+                  Pedidos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setCurrentPage('settings'); setMenuOpen(false); }}
+                  className="block w-full rounded-2xl bg-soil-50 px-4 py-3 text-left text-sm font-semibold text-soil-800"
+                >
+                  Configuracion
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setCurrentPage('configurar-pagos'); setMenuOpen(false); }}
+                  className="block w-full rounded-2xl bg-soil-50 px-4 py-3 text-left text-sm font-semibold text-soil-800"
+                >
+                  Configurar pagos
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setCurrentPage('mis-ventas'); setMenuOpen(false); }}
+                  className="block w-full rounded-2xl bg-soil-50 px-4 py-3 text-left text-sm font-semibold text-soil-800"
+                >
+                  Mis ventas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { logout(); setCurrentPage('home'); setMenuOpen(false); }}
+                  className="block w-full rounded-2xl bg-red-50 px-4 py-3 text-left text-sm font-semibold text-red-700"
                 >
                   Cerrar sesion
                 </button>
@@ -157,26 +206,23 @@ export const Header = () => {
               <>
                 <button
                   type="button"
-                  onClick={() => {
-                    openAuth('login');
-                    setMenuOpen(false);
-                  }}
+                  onClick={() => { setCurrentPage('onboarding'); setMenuOpen(false); }}
                   className="block w-full rounded-2xl bg-soil-50 px-4 py-3 text-left text-sm font-semibold text-soil-800"
                 >
-                  Ingresar
+                  Como funciona
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    openAuth('register');
-                    setMenuOpen(false);
-                  }}
-                  className="block w-full rounded-2xl bg-sky-50 px-4 py-3 text-left text-sm font-semibold text-sky-800"
+                  onClick={() => { openAuth('login'); setMenuOpen(false); }}
+                  className="block w-full rounded-2xl bg-leaf-600 px-4 py-3 text-left text-sm font-bold text-white"
                 >
-                  Crear cuenta
+                  Ingresar
                 </button>
               </>
             )}
+          </div>
+          <div className="mt-4">
+            <RoleSelector compact />
           </div>
         </div>
       )}

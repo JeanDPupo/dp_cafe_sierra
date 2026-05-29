@@ -1,194 +1,122 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { AuthContext } from './AuthContext';
-import { api } from '../lib/api';
-import {
-  mapCatalogProduct,
-  mapProductDetail,
-  mapProducerProfile,
-  stageToApi,
-} from '../lib/mappers';
+import React, { createContext, useState } from 'react';
+import { mockProducts, mockSellerProfile } from '../data/mockData';
 
 export const ProductosContext = createContext();
 
-function buildProductPayload(producto) {
-  return {
-    farmId: Number(producto.fincaId),
-    name: producto.nombre,
-    variety: producto.variedad,
-    pricePerKg: Number(producto.precio),
-    availableKg: Number(producto.cantidad),
-    description: producto.descripcion,
-    mainImageUrl: producto.foto,
-    processes: producto.procesos.map((proceso, index) => ({
-      stage: stageToApi(proceso.etapa),
-      description: proceso.descripcion,
-      resultType: proceso.resultado,
-      orderIndex: index + 1,
-      media: [],
-    })),
-  };
-}
-
 export const ProductosProvider = ({ children }) => {
-  const { token, isAuthenticated } = useContext(AuthContext);
-  const [productos, setProductos] = useState([]);
-  const [misProductos, setMisProductos] = useState([]);
-  const [selectedProducto, setSelectedProducto] = useState(null);
-  const [selectedProducerProfile, setSelectedProducerProfile] = useState(null);
-  const [catalogLoading, setCatalogLoading] = useState(false);
-  const [mineLoading, setMineLoading] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [producerLoading, setProducerLoading] = useState(false);
-  const [productosError, setProductosError] = useState('');
+  const [catalogoBase] = useState(mockProducts);
+  const [misProductos, setMisProductos] = useState([
+    {
+      id: 100,
+      nombre: 'Lote de origen Los Limos',
+      productor: {
+        nombre: mockSellerProfile.marca,
+        ubicacion: mockSellerProfile.ubicacion,
+        telefono: mockSellerProfile.telefono,
+        finca: mockSellerProfile.finca,
+        historia: mockSellerProfile.historia,
+        experiencia: mockSellerProfile.experiencia,
+        especialidad: 'Venta directa y procesos visibles',
+      },
+      precio: 28000,
+      cantidad: 15,
+      variedad: 'Arabica',
+      tipoGrano: 'Lavado tradicional',
+      tueste: 'Medio',
+      foto:
+        'https://images.unsplash.com/photo-1559056199-641a0ac8b8d5?w=900&h=700&fit=crop',
+      descripcion:
+        'Un lote pensado para compradores que buscan origen claro, productor visible y perfil amable.',
+      ubicacionGPS: mockSellerProfile.ubicacion,
+      procesos: [
+        {
+          etapa: 'Siembra',
+          obligatorio: true,
+          resultado: 'Arabica',
+          descripcion: 'Seleccion de semilla y preparacion del terreno.',
+        },
+        {
+          etapa: 'Cultivo',
+          obligatorio: true,
+          resultado: 'Planta cuidada',
+          descripcion: 'Manejo del cultivo con acompanamiento constante.',
+        },
+        {
+          etapa: 'Cosecha',
+          obligatorio: true,
+          resultado: 'Cereza madura',
+          descripcion: 'Cosecha manual y seleccion del fruto.',
+        },
+        {
+          etapa: 'Lavado y secado',
+          obligatorio: true,
+          resultado: 'Grano limpio',
+          descripcion: 'Lavado y secado en tiempos controlados.',
+        },
+      ],
+      createdAt: new Date().toISOString(),
+    },
+  ]);
+  const [selectedProducto, setSelectedProducto] = useState(mockProducts[0]);
 
-  const refreshCatalog = useCallback(async (filters = {}) => {
-    setCatalogLoading(true);
-    setProductosError('');
-    try {
-      const response = await api.getProducts({
-        priceMin: filters.precioMin,
-        priceMax: filters.precioMax,
-        location: filters.ubicacion,
-        variety: filters.variedad,
-      });
-      const mapped = response.map(mapCatalogProduct);
-      setProductos(mapped);
-      return mapped;
-    } catch (error) {
-      setProductosError(error.message);
-      throw error;
-    } finally {
-      setCatalogLoading(false);
-    }
-  }, []);
+  const productos = [...misProductos, ...catalogoBase];
 
-  const refreshMine = useCallback(async () => {
-    if (!token) {
-      setMisProductos([]);
-      return [];
-    }
+  const addProducto = (producto) => {
+    const newProducto = {
+      ...producto,
+      id: Date.now(),
+      createdAt: new Date().toISOString(),
+    };
+    setMisProductos((prev) => [newProducto, ...prev]);
+    setSelectedProducto(newProducto);
+  };
 
-    setMineLoading(true);
-    try {
-      const response = await api.getMyProducts(token);
-      const mapped = response.map(mapCatalogProduct);
-      setMisProductos(mapped);
-      return mapped;
-    } catch (error) {
-      if (error.status === 404) {
-        setMisProductos([]);
-        return [];
+  const deleteProducto = (id) => {
+    setMisProductos((prev) => prev.filter((producto) => producto.id !== id));
+  };
+
+  const updateProducto = (id, updatedData) => {
+    setMisProductos((prev) =>
+      prev.map((producto) =>
+        producto.id === id ? { ...producto, ...updatedData } : producto
+      )
+    );
+  };
+
+  const filtrarProductos = (filtros) => {
+    return productos.filter((producto) => {
+      if (filtros.precioMin && producto.precio < filtros.precioMin) return false;
+      if (filtros.precioMax && producto.precio > filtros.precioMax) return false;
+      if (
+        filtros.ubicacion &&
+        !producto.ubicacionGPS.toLowerCase().includes(filtros.ubicacion.toLowerCase())
+      ) {
+        return false;
       }
-      setProductosError(error.message);
-      throw error;
-    } finally {
-      setMineLoading(false);
-    }
-  }, [token]);
+      if (
+        filtros.variedad &&
+        !producto.variedad.toLowerCase().includes(filtros.variedad.toLowerCase())
+      ) {
+        return false;
+      }
+      return true;
+    });
+  };
 
-  useEffect(() => {
-    refreshCatalog();
-  }, [refreshCatalog]);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      refreshMine();
-      return;
-    }
-    setMisProductos([]);
-  }, [isAuthenticated, refreshMine]);
-
-  const openProduct = useCallback(async (productoOrId) => {
-    const productId = typeof productoOrId === 'object' ? productoOrId.id : productoOrId;
-    setDetailLoading(true);
-    setProductosError('');
-    try {
-      const response = await api.getProduct(productId);
-      const mapped = mapProductDetail(response);
-      setSelectedProducto(mapped);
-      return mapped;
-    } catch (error) {
-      setProductosError(error.message);
-      throw error;
-    } finally {
-      setDetailLoading(false);
-    }
-  }, []);
-
-  const openProducerProfile = useCallback(async (producerProfileId) => {
-    setProducerLoading(true);
-    setProductosError('');
-    try {
-      const response = await api.getProducer(producerProfileId);
-      const mapped = mapProducerProfile(response);
-      setSelectedProducerProfile(mapped);
-      return mapped;
-    } catch (error) {
-      setProductosError(error.message);
-      throw error;
-    } finally {
-      setProducerLoading(false);
-    }
-  }, []);
-
-  const addProducto = useCallback(async (producto) => {
-    if (!token) {
-      throw new Error('Necesitas iniciar sesion para publicar.');
-    }
-
-    const response = await api.createProduct(token, buildProductPayload(producto));
-    const mapped = mapProductDetail(response);
-    setSelectedProducto(mapped);
-    await Promise.all([refreshCatalog(), refreshMine()]);
-    return mapped;
-  }, [token, refreshCatalog, refreshMine]);
-
-  const deleteProducto = useCallback(async (id) => {
-    if (!token) {
-      throw new Error('Necesitas iniciar sesion para gestionar tus lotes.');
-    }
-
-    await api.deleteProduct(token, id);
-    await Promise.all([refreshCatalog(), refreshMine()]);
-  }, [token, refreshCatalog, refreshMine]);
-
-  const value = useMemo(
-    () => ({
-      productos,
-      misProductos,
-      selectedProducto,
-      setSelectedProducto,
-      selectedProducerProfile,
-      catalogLoading,
-      mineLoading,
-      detailLoading,
-      producerLoading,
-      productosError,
-      refreshCatalog,
-      refreshMine,
-      openProduct,
-      openProducerProfile,
-      addProducto,
-      deleteProducto,
-    }),
-    [
-      productos,
-      misProductos,
-      selectedProducto,
-      selectedProducerProfile,
-      catalogLoading,
-      mineLoading,
-      detailLoading,
-      producerLoading,
-      productosError,
-      refreshCatalog,
-      refreshMine,
-      openProduct,
-      openProducerProfile,
-      addProducto,
-      deleteProducto,
-    ]
+  return (
+    <ProductosContext.Provider
+      value={{
+        productos,
+        misProductos,
+        selectedProducto,
+        setSelectedProducto,
+        addProducto,
+        deleteProducto,
+        updateProducto,
+        filtrarProductos,
+      }}
+    >
+      {children}
+    </ProductosContext.Provider>
   );
-
-  return <ProductosContext.Provider value={value}>{children}</ProductosContext.Provider>;
 };

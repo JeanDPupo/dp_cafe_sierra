@@ -6,29 +6,19 @@ import { BotonWhatsApp } from '../../components/BotonWhatsApp';
 
 export const PerfilProductor = () => {
   const { setCurrentPage } = useContext(RoleContext);
-  const {
-    setSelectedProducto,
-    openProduct,
-    openProducerProfile,
-    selectedProducerProfile,
-    producerLoading,
-  } = useContext(ProductosContext);
+  const { productos, setSelectedProducto, selectedProducto } = useContext(ProductosContext);
 
-  if (producerLoading) {
-    return (
-      <div className="surface-card text-center">
-        <p className="text-soil-600">Cargando perfil del productor...</p>
-      </div>
-    );
-  }
-
-  if (!selectedProducerProfile) {
+  if (!selectedProducto) {
     return (
       <div className="surface-card text-center">
         <p className="text-soil-600">No hay productor seleccionado.</p>
       </div>
     );
   }
+
+  const productosDelProductor = productos.filter(
+    (producto) => producto.productor.nombre === selectedProducto.productor.nombre
+  );
 
   return (
     <section className="space-y-6">
@@ -43,28 +33,28 @@ export const PerfilProductor = () => {
               Perfil productor
             </p>
             <h1 className="mt-3 font-display text-4xl">
-              {selectedProducerProfile.brandName}
+              {selectedProducto.productor.nombre}
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-white/85">
-              {selectedProducerProfile.story || selectedProducerProfile.bio}
+              {selectedProducto.productor.historia}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl bg-white/15 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-white/70">Propietario</p>
-              <p className="mt-2 font-semibold">{selectedProducerProfile.ownerName}</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-white/70">Finca</p>
+              <p className="mt-2 font-semibold">{selectedProducto.productor.finca}</p>
             </div>
             <div className="rounded-2xl bg-white/15 p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-white/70">Ubicacion</p>
-              <p className="mt-2 font-semibold">{selectedProducerProfile.locationText}</p>
+              <p className="mt-2 font-semibold">{selectedProducto.productor.ubicacion}</p>
             </div>
             <div className="rounded-2xl bg-white/15 p-4">
               <p className="text-xs uppercase tracking-[0.16em] text-white/70">Experiencia</p>
-              <p className="mt-2 font-semibold">{selectedProducerProfile.yearsExperience || 'Sin registro'}</p>
+              <p className="mt-2 font-semibold">{selectedProducto.productor.experiencia}</p>
             </div>
             <div className="rounded-2xl bg-white/15 p-4">
-              <p className="text-xs uppercase tracking-[0.16em] text-white/70">Fincas</p>
-              <p className="mt-2 font-semibold">{selectedProducerProfile.farms.length}</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-white/70">Especialidad</p>
+              <p className="mt-2 font-semibold">{selectedProducto.productor.especialidad}</p>
             </div>
           </div>
         </div>
@@ -81,34 +71,17 @@ export const PerfilProductor = () => {
             </h2>
           </div>
           <a
-            href={`tel:${selectedProducerProfile.whatsappNumber || selectedProducerProfile.phone}`}
+            href={`tel:${selectedProducto.productor.telefono}`}
             className="text-sm font-semibold text-soil-700 underline decoration-soil-300 underline-offset-4"
           >
-            {selectedProducerProfile.whatsappNumber || selectedProducerProfile.phone}
+            {selectedProducto.productor.telefono}
           </a>
         </div>
         <div className="mt-5">
           <BotonWhatsApp
-            telefono={selectedProducerProfile.whatsappNumber || selectedProducerProfile.phone}
-            productName={`los cafes de ${selectedProducerProfile.brandName}`}
+            telefono={selectedProducto.productor.telefono}
+            productName={`los cafes de ${selectedProducto.productor.nombre}`}
           />
-        </div>
-      </article>
-
-      <article className="surface-card">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-700">
-          Fincas registradas
-        </p>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {selectedProducerProfile.farms.map((farm) => (
-            <div key={farm.id} className="rounded-2xl border border-soil-100 bg-soil-50 p-4">
-              <p className="font-semibold text-soil-900">{farm.nombre}</p>
-              <p className="mt-2 text-sm text-soil-600">{farm.ubicacion}</p>
-              {farm.descripcion && (
-                <p className="mt-2 text-sm leading-6 text-soil-600">{farm.descripcion}</p>
-              )}
-            </div>
-          ))}
         </div>
       </article>
 
@@ -122,17 +95,16 @@ export const PerfilProductor = () => {
           </h2>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {selectedProducerProfile.products.map((producto) => (
+          {productosDelProductor.map((producto) => (
             <ProductCard
               key={producto.id}
               producto={producto}
-              onViewDetail={async () => {
-                const detail = await openProduct(producto.id);
-                setSelectedProducto(detail);
+              onViewDetail={() => {
+                setSelectedProducto(producto);
                 setCurrentPage('detalle-producto');
               }}
-              onViewProducer={async () => {
-                await openProducerProfile(producto.producerProfileId);
+              onViewProducer={() => {
+                setSelectedProducto(producto);
               }}
             />
           ))}

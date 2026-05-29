@@ -1,36 +1,35 @@
 import React, { useContext, useEffect } from 'react';
 import './App.css';
-import { AuthProvider, AuthContext } from './context/AuthContext';
 import { RoleProvider, RoleContext } from './context/RoleContext';
 import { ProductosProvider } from './context/ProductosContext';
+import { AuthProvider } from './context/AuthContext';
 import { CommerceProvider } from './context/CommerceContext';
 import { Header } from './components/Header';
 import { RoleSelector } from './components/RoleSelector';
 import { AuthPanel } from './components/AuthPanel';
+import ErrorBoundary from './components/ErrorBoundary';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { HomeConsumidor } from './pages/Consumidor/HomeConsumidor';
 import { Catalogo } from './pages/Consumidor/Catalogo';
 import { DetalleProducto } from './pages/Consumidor/DetalleProducto';
 import { PerfilProductor } from './pages/Consumidor/PerfilProductor';
 import { Carrito } from './pages/Consumidor/Carrito';
-import { Pedidos } from './pages/Consumidor/Pedidos';
 import { PagoResultado } from './pages/Consumidor/PagoResultado';
+import { Pedidos } from './pages/Consumidor/Pedidos';
 import { HomeProductor } from './pages/Productor/HomeProductor';
-import { CompletarPerfilProductor } from './pages/Productor/CompletarPerfilProductor';
 import { PublicacionProductos } from './pages/Productor/PublicacionProductos';
 import { MisProductos } from './pages/Productor/MisProductos';
 import { MisFincas } from './pages/Productor/MisFincas';
-
-function LogoPlaceholder() {
-  return (
-    <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-soil-300 bg-white/80 text-[11px] font-semibold uppercase tracking-[0.18em] text-soil-500 shadow-soft">
-      Logo
-    </div>
-  );
-}
+import { MisVentas } from './pages/Productor/MisVentas';
+import { CompletarPerfilProductor } from './pages/Productor/CompletarPerfilProductor';
+import { ConfiguracionPagos } from './pages/Productor/ConfiguracionPagos';
+import { LoginPage } from './pages/LoginPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { OnboardingPage } from './pages/OnboardingPage';
+import logo from './logo.svg';
 
 function LandingHero() {
-  const { setCurrentPage, setRoleExplicit, goToSellerSection } = useContext(RoleContext);
-  const { isAuthenticated, user, openAuth } = useContext(AuthContext);
+  const { setCurrentPage, setRoleExplicit } = useContext(RoleContext);
 
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-hero px-6 py-10 shadow-soft sm:px-8 lg:px-12 lg:py-14">
@@ -51,7 +50,7 @@ function LandingHero() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <button
               onClick={() => {
-                setRoleExplicit('comprar');
+                setRoleExplicit('consumidor');
                 setCurrentPage('catalogo');
               }}
               className="btn-primary"
@@ -60,7 +59,8 @@ function LandingHero() {
             </button>
             <button
               onClick={() => {
-                goToSellerSection('publicar');
+                setRoleExplicit('productor');
+                setCurrentPage('publicar');
               }}
               className="btn-ghost"
             >
@@ -89,48 +89,18 @@ function LandingHero() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">
-                  Espacio para marca
+                  CafeDirecto Sacramento
                 </p>
                 <h2 className="mt-2 font-display text-2xl text-soil-900">
-                  Aqui ira tu logo
+                  Comercializacion directa de cafe
                 </h2>
               </div>
-              <LogoPlaceholder />
+              <img src={logo} alt="CafeDirecto Sacramento" className="h-16 w-16 rounded-2xl shadow-soft" />
             </div>
             <p className="mt-4 text-sm leading-7 text-soil-600">
-              Por ahora dejamos un placeholder limpio para que luego entren tu
-              logo, favicon e iconos del manifiesto sin romper el diseno.
+              Una plataforma que conecta productores de Sacramento con consumidores
+              finales, mostrando el origen, el proceso y la historia detras de cada lote.
             </p>
-          </div>
-
-          <div className="panel-card">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-700">
-              Sesion actual
-            </p>
-            {isAuthenticated ? (
-              <div className="mt-4 space-y-3">
-                <p className="text-lg font-semibold text-soil-900">{user.fullName}</p>
-                <p className="text-sm text-soil-600">{user.email}</p>
-                <p className="text-sm leading-7 text-soil-600">
-                  Estas usando una sola cuenta para explorar, comprar y entrar luego a la zona de venta.
-                </p>
-              </div>
-            ) : (
-              <div className="mt-4 space-y-4">
-                <p className="text-sm leading-7 text-soil-600">
-                  Puedes explorar el catalogo sin entrar, pero para vender, guardar tu perfil productor
-                  y publicar lotes necesitas iniciar sesion.
-                </p>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <button type="button" className="btn-secondary" onClick={() => openAuth('login')}>
-                    Ingresar
-                  </button>
-                  <button type="button" className="btn-ghost" onClick={() => openAuth('register')}>
-                    Crear cuenta
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="panel-card">
@@ -141,8 +111,8 @@ function LandingHero() {
               <RoleSelector compact />
             </div>
             <p className="mt-4 text-sm leading-7 text-soil-600">
-              No son tipos de usuario distintos: es la misma cuenta entrando a la
-              seccion de comprar o a la de vender.
+              Mantenemos dos vistas de trabajo para la demo: una orientada a comprar
+              y otra a vender, sin perder coherencia visual.
             </p>
           </div>
         </div>
@@ -152,67 +122,45 @@ function LandingHero() {
 }
 
 function AppContent() {
-  const { role, currentPage, sellerProfile, setCurrentPage } = useContext(RoleContext);
-  const { sessionReady } = useContext(AuthContext);
-  const isPaymentPath = window.location.pathname.startsWith('/payments/');
+  const { role, currentPage, setCurrentPage } = useContext(RoleContext);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const requestedPage = params.get('page');
-    if (requestedPage) {
-      setCurrentPage(requestedPage);
-      window.history.replaceState({}, '', window.location.pathname);
+    if (params.get('payment')) {
+      setCurrentPage('pago-resultado');
     }
-  }, [setCurrentPage]);
+  }, []);
+
+  const showHero = ['home', 'catalogo', 'detalle-producto', 'perfil-productor', 'publicar', 'mis-productos'].includes(currentPage);
 
   const renderPage = () => {
-    const pathname = window.location.pathname;
-    const paymentState = new URLSearchParams(window.location.search).get('payment');
-    if (paymentState) {
-      return <PagoResultado state={paymentState} />;
-    }
-    if (pathname.startsWith('/payments/success')) {
-      return <PagoResultado state="success" />;
-    }
-    if (pathname.startsWith('/payments/pending')) {
-      return <PagoResultado state="pending" />;
-    }
-    if (pathname.startsWith('/payments/failure')) {
-      return <PagoResultado state="failure" />;
-    }
-    if (pathname.startsWith('/payments/mock')) {
-      return <PagoResultado state="mock" />;
-    }
-    if (pathname.startsWith('/payments/nequi')) {
-      return <PagoResultado state="nequi" />;
+    const crossPages = {
+      'login': <LoginPage />,
+      'settings': <SettingsPage />,
+      'onboarding': <OnboardingPage />,
+      'carrito': <Carrito />,
+      'pedidos': <Pedidos />,
+      'pago-resultado': <PagoResultado />,
+    };
+
+    if (crossPages[currentPage]) {
+      return crossPages[currentPage];
     }
 
-    if (!sessionReady) {
-      return (
-        <section className="surface-card text-center">
-          <h2 className="font-display text-3xl text-soil-900">Preparando tu sesion</h2>
-          <p className="mt-3 text-sm leading-7 text-soil-600">
-            Estamos verificando si ya existe una cuenta activa en este dispositivo.
-          </p>
-        </section>
-      );
-    }
-
-    if (role === 'vender') {
-      if (!sellerProfile?.activeSeller && currentPage !== 'activar-productor') {
-        return <CompletarPerfilProductor />;
-      }
+    if (role === 'productor') {
       switch (currentPage) {
-        case 'activar-productor':
-          return <CompletarPerfilProductor />;
-        case 'panel-vender':
-          return <HomeProductor />;
         case 'publicar':
           return <PublicacionProductos />;
-        case 'mis-fincas':
-          return <MisFincas />;
         case 'mis-productos':
           return <MisProductos />;
+        case 'mis-fincas':
+          return <MisFincas />;
+        case 'completar-perfil':
+          return <CompletarPerfilProductor />;
+        case 'configurar-pagos':
+          return <ConfiguracionPagos />;
+        case 'mis-ventas':
+          return <MisVentas />;
         default:
           return <HomeProductor />;
       }
@@ -225,10 +173,6 @@ function AppContent() {
         return <DetalleProducto />;
       case 'perfil-productor':
         return <PerfilProductor />;
-      case 'carrito':
-        return <Carrito />;
-      case 'pedidos':
-        return <Pedidos />;
       default:
         return <HomeConsumidor />;
     }
@@ -236,9 +180,10 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f9f7f2_0%,#eefbf3_48%,#eef7ff_100%)] text-soil-900">
+      <OfflineIndicator />
       <Header />
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-14 pt-6 sm:px-6 lg:px-8">
-        {!isPaymentPath && !new URLSearchParams(window.location.search).get('payment') && <LandingHero />}
+        {showHero && <LandingHero />}
         {renderPage()}
       </main>
       <footer className="border-t border-soil-200/80 bg-white/70">
@@ -247,7 +192,7 @@ function AppContent() {
             <p className="font-semibold text-soil-800">CafeDirecto Sacramento</p>
             <p>
               Plataforma de comercializacion de cafe con enfoque en trazabilidad,
-              confianza, compra y venta desde una sola cuenta.
+              confianza y venta directa.
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-soil-500">
@@ -255,26 +200,28 @@ function AppContent() {
             <span className="h-1 w-1 rounded-full bg-soil-300" />
             <span>Responsive</span>
             <span className="h-1 w-1 rounded-full bg-soil-300" />
-            <span>Render ready</span>
+            <span>Demo 2026</span>
           </div>
         </div>
       </footer>
-      <AuthPanel />
     </div>
   );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <RoleProvider>
-        <ProductosProvider>
-          <CommerceProvider>
-            <AppContent />
-          </CommerceProvider>
-        </ProductosProvider>
-      </RoleProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <CommerceProvider>
+          <RoleProvider>
+            <ProductosProvider>
+              <AppContent />
+              <AuthPanel />
+            </ProductosProvider>
+          </RoleProvider>
+        </CommerceProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

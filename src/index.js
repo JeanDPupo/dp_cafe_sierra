@@ -4,6 +4,12 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+window.addEventListener('unhandledrejection', (event) => {
+  if (event.reason && event.reason.isNetworkError) {
+    event.preventDefault();
+  }
+});
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

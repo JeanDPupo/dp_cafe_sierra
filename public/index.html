@@ -21,9 +21,104 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>CafeDirecto Sacramento</title>
+    <style>
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: url('%PUBLIC_URL%/splash-bg.jpeg') center / cover no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #splash::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(23, 61, 41, 0.75);
+      }
+      #splash-inner {
+        position: relative;
+        text-align: center;
+        color: #fff;
+      }
+      #splash-inner img {
+        width: 100px;
+        height: 100px;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 45px -24px rgba(0,0,0,0.5);
+        margin-bottom: 1.25rem;
+      }
+      #splash-inner h1 {
+        font-family: 'Fraunces', Georgia, serif;
+        font-size: 2rem;
+        margin: 0 0 0.25rem;
+      }
+      #splash-inner p {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-size: 0.875rem;
+        opacity: 0.8;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .splash-spinner {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        margin-top: 1.5rem;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash">
+      <div id="splash-inner">
+        <img src="%PUBLIC_URL%/logo-brand.jpeg" alt="CafeDirecto Sacramento" />
+        <h1>CafeDirecto</h1>
+        <p>Sacramento</p>
+        <div class="splash-spinner"></div>
+      </div>
+    </div>
     <noscript>Necesitas habilitar JavaScript para usar esta aplicacion.</noscript>
     <div id="root"></div>
+    <script>
+      var splash = document.getElementById('splash');
+      var root = document.getElementById('root');
+      var startTime = Date.now();
+      var minDuration = 2000;
+      var hidden = false;
+      var reactReady = false;
+
+      function tryHide() {
+        if (hidden) return;
+        var elapsed = Date.now() - startTime;
+        if (reactReady && elapsed >= minDuration) {
+          hidden = true;
+          splash.style.opacity = '0';
+          splash.style.transition = 'opacity 0.4s ease';
+          setTimeout(function () { splash.remove(); }, 450);
+        }
+      }
+
+      var observer = new MutationObserver(function () {
+        if (root.children.length > 0) {
+          reactReady = true;
+          tryHide();
+          observer.disconnect();
+        }
+      });
+      observer.observe(root, { childList: true, subtree: true });
+
+      setTimeout(function () {
+        reactReady = true;
+        tryHide();
+      }, minDuration);
+    </script>
   </body>
   </html>

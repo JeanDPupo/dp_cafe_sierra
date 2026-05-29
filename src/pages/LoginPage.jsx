@@ -1,5 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { RoleContext } from '../context/RoleContext';
+import logo from '../logo.svg';
 
 const loginInitialState = {
   email: '',
@@ -14,66 +16,63 @@ const registerInitialState = {
   whatsappNumber: '',
 };
 
-export const AuthPanel = () => {
+export const LoginPage = () => {
   const {
-    authOpen,
-    authMode,
     authLoading,
     authError,
-    closeAuth,
-    setAuthMode,
     login,
     register,
   } = useContext(AuthContext);
+  const { setCurrentPage } = useContext(RoleContext);
+
+  const [mode, setMode] = useState('login');
   const [loginForm, setLoginForm] = useState(loginInitialState);
   const [registerForm, setRegisterForm] = useState(registerInitialState);
+  const [successMsg, setSuccessMsg] = useState('');
 
-  if (!authOpen) {
-    return null;
-  }
-
-  const isLogin = authMode === 'login';
+  const isLogin = mode === 'login';
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setSuccessMsg('');
     try {
       if (isLogin) {
         await login(loginForm);
+        setCurrentPage('home');
       } else {
         await register(registerForm);
+        setSuccessMsg('Cuenta creada correctamente. Ya puedes iniciar sesion.');
+        setMode('login');
+        setLoginForm({ email: registerForm.email, password: '' });
       }
     } catch {
-      // El error ya queda en authError del contexto
+      // error handled by AuthContext
     }
   };
 
+  const handleGuest = () => {
+    setCurrentPage('home');
+  };
+
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-soil-900/45 px-4 py-8 backdrop-blur-sm">
-      <div className="surface-card w-full max-w-2xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-700">
-              {isLogin ? 'Entrar' : 'Crear cuenta'}
-            </p>
-            <h2 className="mt-2 font-display text-3xl text-soil-900">
-              {isLogin
-                ? 'Ingresa con tu cuenta'
-                : 'Registra una sola cuenta para comprar y vender'}
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-soil-600">
-              No necesitas elegir entre comprador o productor. Esa decision la tomas
-              despues, entrando a la zona de venta y completando tu perfil productor.
-            </p>
-          </div>
-          <button type="button" onClick={closeAuth} className="btn-ghost px-4 py-2">
-            Cerrar
-          </button>
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+      <div className="surface-card w-full max-w-lg">
+        <div className="text-center">
+          <img src={logo} alt="CafeDirecto Sacramento" className="mx-auto h-14 w-14 rounded-2xl shadow-soft" />
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-leaf-700 mt-4">
+            {isLogin ? 'Iniciar sesion' : 'Crear cuenta'}
+          </p>
+          <h2 className="mt-2 font-display text-3xl text-soil-900">
+            {isLogin
+              ? 'Bienvenido de vuelta'
+              : 'Registra una sola cuenta para comprar y vender'}
+          </h2>
         </div>
 
         <div className="mt-6 flex rounded-full border border-soil-200 bg-soil-50 p-1">
           <button
             type="button"
-            onClick={() => setAuthMode('login')}
+            onClick={() => { setMode('login'); setSuccessMsg(''); }}
             className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold ${
               isLogin ? 'bg-sky-600 text-white' : 'text-soil-700'
             }`}
@@ -82,7 +81,7 @@ export const AuthPanel = () => {
           </button>
           <button
             type="button"
-            onClick={() => setAuthMode('register')}
+            onClick={() => { setMode('register'); setSuccessMsg(''); }}
             className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold ${
               !isLogin ? 'bg-leaf-600 text-white' : 'text-soil-700'
             }`}
@@ -97,8 +96,8 @@ export const AuthPanel = () => {
               className="field md:col-span-2"
               placeholder="Nombre completo"
               value={registerForm.fullName}
-              onChange={(event) =>
-                setRegisterForm((prev) => ({ ...prev, fullName: event.target.value }))
+              onChange={(e) =>
+                setRegisterForm((prev) => ({ ...prev, fullName: e.target.value }))
               }
               required
             />
@@ -109,10 +108,10 @@ export const AuthPanel = () => {
             type="email"
             placeholder="Correo electronico"
             value={isLogin ? loginForm.email : registerForm.email}
-            onChange={(event) =>
+            onChange={(e) =>
               isLogin
-                ? setLoginForm((prev) => ({ ...prev, email: event.target.value }))
-                : setRegisterForm((prev) => ({ ...prev, email: event.target.value }))
+                ? setLoginForm((prev) => ({ ...prev, email: e.target.value }))
+                : setRegisterForm((prev) => ({ ...prev, email: e.target.value }))
             }
             required
           />
@@ -122,10 +121,10 @@ export const AuthPanel = () => {
             type="password"
             placeholder="Contrasena"
             value={isLogin ? loginForm.password : registerForm.password}
-            onChange={(event) =>
+            onChange={(e) =>
               isLogin
-                ? setLoginForm((prev) => ({ ...prev, password: event.target.value }))
-                : setRegisterForm((prev) => ({ ...prev, password: event.target.value }))
+                ? setLoginForm((prev) => ({ ...prev, password: e.target.value }))
+                : setRegisterForm((prev) => ({ ...prev, password: e.target.value }))
             }
             required
             minLength={8}
@@ -137,8 +136,8 @@ export const AuthPanel = () => {
                 className="field"
                 placeholder="Telefono"
                 value={registerForm.phone}
-                onChange={(event) =>
-                  setRegisterForm((prev) => ({ ...prev, phone: event.target.value }))
+                onChange={(e) =>
+                  setRegisterForm((prev) => ({ ...prev, phone: e.target.value }))
                 }
                 required
               />
@@ -146,15 +145,21 @@ export const AuthPanel = () => {
                 className="field"
                 placeholder="WhatsApp"
                 value={registerForm.whatsappNumber}
-                onChange={(event) =>
+                onChange={(e) =>
                   setRegisterForm((prev) => ({
                     ...prev,
-                    whatsappNumber: event.target.value,
+                    whatsappNumber: e.target.value,
                   }))
                 }
                 required
               />
             </>
+          )}
+
+          {successMsg && (
+            <div className="md:col-span-2 rounded-2xl border border-leaf-200 bg-leaf-50 px-4 py-3 text-sm text-leaf-800 font-semibold">
+              {successMsg}
+            </div>
           )}
 
           {authError && (
@@ -164,15 +169,15 @@ export const AuthPanel = () => {
           )}
 
           <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row">
-            <button type="submit" className="btn-primary" disabled={authLoading}>
+            <button type="submit" className="btn-primary flex-1" disabled={authLoading}>
               {authLoading
                 ? 'Procesando...'
                 : isLogin
                   ? 'Ingresar'
                   : 'Crear cuenta'}
             </button>
-            <button type="button" className="btn-ghost" onClick={closeAuth}>
-              Seguir explorando
+            <button type="button" className="btn-ghost flex-1" onClick={handleGuest}>
+              Continuar como invitado
             </button>
           </div>
         </form>
@@ -180,3 +185,5 @@ export const AuthPanel = () => {
     </div>
   );
 };
+
+export default LoginPage;

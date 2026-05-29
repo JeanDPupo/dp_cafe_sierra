@@ -1,27 +1,50 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState, useMemo } from 'react';
 import { RoleContext } from '../../context/RoleContext';
+import { AuthContext } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 
 const initialForm = {
-  nombre: '',
-  ubicacion: '',
+  name: '',
+  locationText: '',
   gps: '',
-  descripcion: '',
+  description: '',
 };
 
 export const MisFincas = () => {
-  const {
-    sellerProfile,
-    sellerProfileLoading,
-    sellerProfileError,
-    createFarm,
-    setCurrentPage,
-  } = useContext(RoleContext);
+  const { setCurrentPage } = useContext(RoleContext);
+  const { token, isAuthenticated, openAuth } = useContext(AuthContext);
+  const [farms, setFarms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [formData, setFormData] = useState(initialForm);
   const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const farms = useMemo(() => sellerProfile?.fincas || [], [sellerProfile?.fincas]);
-  const activeFarms = useMemo(() => farms.filter((farm) => farm.active !== false), [farms]);
+  const loadFarms = async () => {
+    if (!token) return;
+    setLoading(true);
+    setLoadError('');
+    try {
+      const data = await api.getMyFarms(token);
+      setFarms(data || []);
+    } catch (error) {
+      setLoadError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadFarms();
+    } else {
+      setFarms([]);
+      setLoading(false);
+    }
+  }, [isAuthenticated, token]);
+
+  const activeFarms = useMemo(() => farms.filter((f) => f.active !== false), [farms]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -31,13 +54,18 @@ export const MisFincas = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!token) { openAuth('login'); return; }
     setSubmitError('');
+    setSubmitting(true);
     try {
-      await createFarm(formData);
+      await api.createFarm(token, formData);
       setFormData(initialForm);
       setSaved(true);
+      await loadFarms();
     } catch (error) {
       setSubmitError(error.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -71,7 +99,17 @@ export const MisFincas = () => {
             </div>
           </div>
 
-          {activeFarms.length === 0 ? (
+          {loadError && (
+            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {loadError}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="mt-6 rounded-2xl border border-dashed border-soil-200 bg-soil-50 p-6 text-sm text-soil-600 text-center">
+              Cargando fincas...
+            </div>
+          ) : activeFarms.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-soil-200 bg-soil-50 p-6 text-sm text-soil-600">
               Aun no tienes fincas activas. Registra la primera para empezar a publicar lotes.
             </div>
@@ -79,13 +117,13 @@ export const MisFincas = () => {
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               {activeFarms.map((farm) => (
                 <article key={farm.id} className="rounded-[1.5rem] border border-soil-100 bg-soil-50 p-5">
-                  <p className="font-display text-2xl text-soil-900">{farm.nombre}</p>
-                  <p className="mt-2 text-sm font-semibold text-leaf-700">{farm.ubicacion}</p>
+                  <p className="font-display text-2xl text-soil-900">{farm.name}</p>
+                  <p className="mt-2 text-sm font-semibold text-leaf-700">{farm.locationText}</p>
                   {farm.gps && (
                     <p className="mt-2 text-sm text-soil-600">GPS: {farm.gps}</p>
                   )}
-                  {farm.descripcion && (
-                    <p className="mt-3 text-sm leading-7 text-soil-600">{farm.descripcion}</p>
+                  {farm.description && (
+                    <p className="mt-3 text-sm leading-7 text-soil-600">{farm.description}</p>
                   )}
                 </article>
               ))}
@@ -103,16 +141,16 @@ export const MisFincas = () => {
 
           <input
             className="field"
-            name="nombre"
-            value={formData.nombre}
+            name="name"
+            value={formData.name}
             onChange={handleChange}
             placeholder="Nombre de la finca"
             required
           />
           <input
             className="field"
-            name="ubicacion"
-            value={formData.ubicacion}
+            name="locationText"
+            value={formData.locationText}
             onChange={handleChange}
             placeholder="Ubicacion de la finca"
             required
@@ -126,15 +164,15 @@ export const MisFincas = () => {
           />
           <textarea
             className="field min-h-[140px]"
-            name="descripcion"
-            value={formData.descripcion}
+            name="description"
+            value={formData.description}
             onChange={handleChange}
             placeholder="Describe esta finca, su altura, enfoque o caracteristicas"
           />
 
-          {(submitError || sellerProfileError) && (
+          {submitError && (
             <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {submitError || sellerProfileError}
+              {submitError}
             </div>
           )}
 
@@ -144,8 +182,8 @@ export const MisFincas = () => {
             </div>
           )}
 
-          <button type="submit" className="btn-primary" disabled={sellerProfileLoading}>
-            {sellerProfileLoading ? 'Guardando...' : 'Guardar finca'}
+          <button type="submit" className="btn-primary" disabled={submitting}>
+            {submitting ? 'Guardando...' : 'Guardar finca'}
           </button>
         </form>
       </div>

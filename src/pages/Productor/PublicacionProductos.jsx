@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { RoleContext } from '../../context/RoleContext';
 import { ProductosContext } from '../../context/ProductosContext';
-import { AuthContext } from '../../context/AuthContext';
+import { mockSellerProfile } from '../../data/mockData';
 
 const initialProcess = [
   { etapa: 'Siembra', obligatorio: true, resultado: '', descripcion: '' },
@@ -14,17 +14,12 @@ const initialProcess = [
 export const PublicacionProductos = () => {
   const { setCurrentPage } = useContext(RoleContext);
   const { addProducto } = useContext(ProductosContext);
-  const { sellerProfile } = useContext(RoleContext);
-  const { isAuthenticated, openAuth } = useContext(AuthContext);
   const [submitted, setSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     nombre: '',
     precio: '',
     cantidad: '',
     variedad: 'Arabica',
-    fincaId: sellerProfile?.fincas?.[0]?.id || '',
     tipoGrano: '',
     tueste: 'Medio',
     descripcion: '',
@@ -32,13 +27,6 @@ export const PublicacionProductos = () => {
       'https://images.unsplash.com/photo-1559056199-641a0ac8b8d5?w=900&h=700&fit=crop',
     procesos: initialProcess,
   });
-  const fincas = useMemo(() => sellerProfile?.fincas || [], [sellerProfile?.fincas]);
-
-  useEffect(() => {
-    if (!formData.fincaId && fincas.length > 0) {
-      setFormData((prev) => ({ ...prev, fincaId: fincas[0].id }));
-    }
-  }, [fincas, formData.fincaId]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -54,67 +42,35 @@ export const PublicacionProductos = () => {
     }));
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    setSubmitError('');
-    setSubmitting(true);
 
-    try {
-      await addProducto({
-        nombre: formData.nombre,
-        precio: parseInt(formData.precio, 10),
-        cantidad: parseInt(formData.cantidad, 10),
-        variedad: formData.variedad,
-        tipoGrano: formData.tipoGrano,
-        tueste: formData.tueste,
-        foto: formData.foto,
-        descripcion: formData.descripcion,
-        ubicacionGPS:
-          fincas.find((finca) => String(finca.id) === String(formData.fincaId))
-            ?.ubicacion || sellerProfile.ubicacion,
-        productor: {
-          nombre: sellerProfile.marca,
-          ubicacion: sellerProfile.ubicacion,
-          telefono: sellerProfile.telefono,
-          finca:
-            fincas.find((finca) => String(finca.id) === String(formData.fincaId))
-              ?.nombre || 'Finca sin nombre',
-          historia: sellerProfile.historia,
-          experiencia: sellerProfile.experiencia,
-          especialidad: 'Venta directa y procesos visibles',
-        },
-        fincaId: formData.fincaId,
-        procesos: formData.procesos.filter(
-          (proceso) => proceso.obligatorio || proceso.descripcion || proceso.resultado
-        ),
-      });
+    addProducto({
+      nombre: formData.nombre,
+      precio: parseInt(formData.precio, 10),
+      cantidad: parseInt(formData.cantidad, 10),
+      variedad: formData.variedad,
+      tipoGrano: formData.tipoGrano,
+      tueste: formData.tueste,
+      foto: formData.foto,
+      descripcion: formData.descripcion,
+      ubicacionGPS: mockSellerProfile.ubicacion,
+      productor: {
+        nombre: mockSellerProfile.marca,
+        ubicacion: mockSellerProfile.ubicacion,
+        telefono: mockSellerProfile.telefono,
+        finca: mockSellerProfile.finca,
+        historia: mockSellerProfile.historia,
+        experiencia: mockSellerProfile.experiencia,
+        especialidad: 'Venta directa y procesos visibles',
+      },
+      procesos: formData.procesos.filter(
+        (proceso) => proceso.obligatorio || proceso.descripcion || proceso.resultado
+      ),
+    });
 
-      setSubmitted(true);
-      setTimeout(() => setCurrentPage('mis-productos'), 1200);
-    } catch (error) {
-      setSubmitError(error.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <section className="surface-card">
-        <h2 className="font-display text-3xl text-soil-900">Necesitas iniciar sesion</h2>
-        <p className="mt-3 text-sm leading-7 text-soil-600">
-          Primero entra con tu cuenta y despues completa tu perfil productor para publicar lotes.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <button type="button" className="btn-primary" onClick={() => openAuth('login')}>
-            Ingresar
-          </button>
-          <button type="button" className="btn-ghost" onClick={() => openAuth('register')}>
-            Crear cuenta
-          </button>
-        </div>
-      </section>
-    );
+    setSubmitted(true);
+    setTimeout(() => setCurrentPage('mis-productos'), 1200);
   };
 
   if (submitted) {
@@ -124,38 +80,6 @@ export const PublicacionProductos = () => {
         <p className="mt-4 text-sm leading-7 text-soil-600">
           Tu lote ya hace parte del catalogo y conserva la informacion del proceso.
         </p>
-      </section>
-    );
-  }
-
-  if (!sellerProfile?.activeSeller) {
-    return (
-      <section className="surface-card">
-        <h2 className="font-display text-3xl text-soil-900">Completa primero tu perfil vendedor</h2>
-        <p className="mt-3 text-sm leading-7 text-soil-600">
-          Antes de publicar, necesitamos tu perfil productor activo y al menos una finca registrada.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <button type="button" onClick={() => setCurrentPage('activar-productor')} className="btn-primary">
-            Completar perfil
-          </button>
-        </div>
-      </section>
-    );
-  }
-
-  if (fincas.length === 0) {
-    return (
-      <section className="surface-card">
-        <h2 className="font-display text-3xl text-soil-900">Registra una finca antes de publicar</h2>
-        <p className="mt-3 text-sm leading-7 text-soil-600">
-          Cada lote debe quedar asociado a una finca concreta para que el origen del cafe sea claro.
-        </p>
-        <div className="mt-6 flex gap-3">
-          <button type="button" onClick={() => setCurrentPage('mis-fincas')} className="btn-primary">
-            Gestionar fincas
-          </button>
-        </div>
       </section>
     );
   }
@@ -193,19 +117,6 @@ export const PublicacionProductos = () => {
                 <option>Arabica</option>
                 <option>Geisha</option>
                 <option>Bourbon</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-soil-700">
-                Finca asociada
-              </label>
-              <select className="field" name="fincaId" value={formData.fincaId} onChange={handleChange} required>
-                {fincas.map((finca) => (
-                  <option key={finca.id} value={finca.id}>
-                    {finca.nombre}
-                  </option>
-                ))}
               </select>
             </div>
 
@@ -263,12 +174,6 @@ export const PublicacionProductos = () => {
             </div>
           </div>
 
-          {submitError && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {submitError}
-            </div>
-          )}
-
           <div className="space-y-4">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soil-500">
@@ -307,8 +212,8 @@ export const PublicacionProductos = () => {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button type="submit" className="btn-primary" disabled={submitting}>
-              {submitting ? 'Publicando...' : 'Publicar lote'}
+            <button type="submit" className="btn-primary">
+              Publicar lote
             </button>
             <button type="button" onClick={() => setCurrentPage('mis-productos')} className="btn-ghost">
               Cancelar

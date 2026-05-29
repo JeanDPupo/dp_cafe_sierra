@@ -29,6 +29,7 @@ export const Carrito = () => {
   const [selectedProvider, setSelectedProvider] = useState('MERCADO_PAGO');
   const [submitError, setSubmitError] = useState('');
   const [quantityDrafts, setQuantityDrafts] = useState({});
+  const [paymentUrl, setPaymentUrl] = useState('');
 
   useEffect(() => {
     const nextDrafts = {};
@@ -40,10 +41,14 @@ export const Carrito = () => {
 
   const handleCheckout = async () => {
     setSubmitError('');
+    setPaymentUrl('');
     try {
       const result = await checkout(selectedProvider);
       if (result?.payment?.checkoutUrl) {
-        window.open(result.payment.checkoutUrl, '_blank', 'noopener,noreferrer');
+        const win = window.open(result.payment.checkoutUrl, '_blank', 'noopener,noreferrer');
+        if (!win || win.closed) {
+          setPaymentUrl(result.payment.checkoutUrl);
+        }
       }
     } catch (error) {
       setSubmitError(error.message);
@@ -205,6 +210,20 @@ export const Carrito = () => {
           >
             {commerceLoading ? 'Preparando pago...' : `Pagar con ${selectedProvider === 'NEQUI' ? 'Nequi' : 'Mercado Pago'}`}
           </button>
+
+          {paymentUrl && (
+            <div className="mt-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-center">
+              <p className="text-sm font-semibold text-sky-800">Ventana bloqueada por el navegador</p>
+              <a
+                href={paymentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex text-sm font-bold text-sky-700 underline hover:text-sky-900"
+              >
+                Clic aqui para ir a la pagina de pago
+              </a>
+            </div>
+          )}
         </aside>
       </div>
     </section>
